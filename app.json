@@ -1,0 +1,12 @@
+{
+  "name": "upload",
+  "displayName": "upload",
+  "expo": {
+    "name": "upload",
+    "slug": "upload",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
