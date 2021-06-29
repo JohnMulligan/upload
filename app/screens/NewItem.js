@@ -5,6 +5,7 @@ import {
   Platform,
   StyleSheet,
   TouchableOpacity,
+  ScrollView,
   Dimensions,
 } from "react-native";
 import RNPickerSelect from "react-native-picker-select";
@@ -98,7 +99,7 @@ function NewItem({ navigation }) {
 
   const uploadMedia = () => {
     setModal(false);
-    navigation.navigate("Create Item", { screen: "Upload Media" });
+    navigation.navigate("Create Item", { screen: "Choose Upload Type" });
   };
 
   const getItems = () => {
@@ -107,6 +108,7 @@ function NewItem({ navigation }) {
       templates.push({
         label: item["o:label"],
         value: item["o:label"],
+        class: item["o:resource_class"]["o:id"],
       })
     );
     return templates;
@@ -130,7 +132,10 @@ function NewItem({ navigation }) {
       "@id": `http://${user[0]}/api/resource_templates/${templateId}`,
       "o:id": templateId,
     };
-    console.log("payload", payload);
+    let templates = getItems()[0];
+    payload["o:resource_class"] = {
+      "o:id": templates.class,
+    };
     SecureStore.getItemAsync(user[1])
       .then((res) =>
         axios
@@ -163,7 +168,7 @@ function NewItem({ navigation }) {
       exit={() => navigation.navigate("Quick Start")}
     >
       <Header title="Create New Item" />
-      <View style={styles.body}>
+      <ScrollView style={styles.body}>
         <Formik initialValues={types} onSubmit={(values) => createItem(values)}>
           {({ handleBlur, handleSubmit, resetForm, values }) => (
             <View>
@@ -177,23 +182,25 @@ function NewItem({ navigation }) {
                 />
               </View>
               {templateSelected ? (
-                <View></View>
+                <>
+                  {titles.map((title, idx) => (
+                    <TextInput
+                      onChangeText={(value) =>
+                        handleChangeText(title, value, IDs[idx])
+                      }
+                      name={title}
+                      id={IDs[idx]}
+                      value={values[title + ""]}
+                      key={idx}
+                    />
+                  ))}
+                </>
               ) : (
                 <View>
                   <Text>Please select a Resource Template to get started.</Text>
                 </View>
               )}
-              {titles.map((title, idx) => (
-                <TextInput
-                  onChangeText={(value) =>
-                    handleChangeText(title, value, IDs[idx])
-                  }
-                  name={title}
-                  id={IDs[idx]}
-                  value={values[title + ""]}
-                  key={idx}
-                />
-              ))}
+
               <Button
                 theme="dark"
                 style={{
@@ -207,7 +214,7 @@ function NewItem({ navigation }) {
             </View>
           )}
         </Formik>
-      </View>
+      </ScrollView>
       {modal && (
         <>
           <Modal title="New item successfully created!">
@@ -241,7 +248,6 @@ function NewItem({ navigation }) {
 const styles = StyleSheet.create({
   body: {
     backgroundColor: colors.blue,
-    height: "100%",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     padding: 25,
@@ -273,7 +279,7 @@ const styles = StyleSheet.create({
     width: width,
     height: height,
     backgroundColor: colors.gray,
-    zIndex: 5
+    zIndex: 5,
   },
   next: {
     position: "absolute",

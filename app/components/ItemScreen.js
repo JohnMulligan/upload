@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
     paddingTop: StatusBar.currentHeight + 40,
   },
   back: {
-    marginTop: 40,
+    marginTop: 30,
     width: 25,
     height: 25,
     position: 'absolute',

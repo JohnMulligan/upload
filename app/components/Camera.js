@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -8,17 +8,142 @@ import {
   TouchableWithoutFeedback,
   Dimensions,
   SafeAreaView,
+  ImageBackground,
 } from "react-native";
-import Button from "../components/Button";
-import SmallButton from "../components/SmallButton";
-
+import Button from "./Button";
+import SmallButton from "./SmallButton";
+import Modal from "./Modal";
+import ModalButton from "./ModalButton";
 import { RNCamera } from "react-native-camera";
 
+import colors from "../config/colors";
 import AuthContext from "../../api/auth/context";
 import ItemContext from "../../api/auth/itemContext";
 import * as SecureStore from "expo-secure-store";
+import * as Crypto from "expo-crypto";
+import RNFS from "react-native-fs";
 
 const { width, height } = Dimensions.get("window");
+
+const CameraPreview = ({ fileUri, item, navigation, resetPhoto }: any) => {
+  const [optionsModal, setOptionsModal] = useState(false);
+  
+  keepPicture = function (item, fileUri) {
+    var data = new FormData();
+    data.append(
+      "data",
+      `{"o:ingester": "upload", "file_index": 0, "o:item": {"o:id": ${item[0]}}, "dcterms:title": [{"type": "literal", "property_id": 1, "@value": "picture.jpg"}]}`
+    );
+    data.append("file[0]", {
+      name: "placeholder.jpg",
+      uri: fileUri,
+      type: "image/jpg",
+    });
+
+    var config = {
+      method: "post",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "multipart/form-data",
+      },
+      body: data,
+    };
+
+    SecureStore.getItemAsync(item[1][1]).then((res) => {
+      fetch(
+        `http://${item[1][0]}/api/media?key_identity=${item[1][1]}&key_credential=${res}`,
+        config
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          RNFS.readFile(fileUri, "base64").then((file_content) => {
+            Crypto.digestStringAsync(
+              Crypto.CryptoDigestAlgorithm.SHA256,
+              file_content
+            ).then((digest) => console.log("Digest: ", digest));
+          });
+          setOptionsModal(true);
+        })
+
+        .catch((err) => {
+          console.log(err);
+        });
+    });
+  };
+
+  return (
+    <SafeAreaView
+      style={{
+        backgroundColor: "transparent",
+        flex: 1,
+        width: "100%",
+        height: "100%",
+      }}
+    >
+      {optionsModal ? (
+        <Modal title="Media on page 1 added. Continue adding?">
+          <View style={styles.children}>
+            <ModalButton
+              onPress={() => uploadMedia()}
+              line={2}
+              title="ON CURRENT PAGE ()"
+            />
+            <ModalButton
+              onPress={() => navigation.navigate("Quick Start")}
+              line={2}
+              title="ON NEXT PAGE ()"
+            />
+          </View>
+          <ModalButton
+            line={1}
+            title={"SAVE & FINISH"}
+            color={colors.light}
+            onPress={() => navigation.navigate("Quick Start")}
+          />
+        </Modal>
+      ) : (
+        <View
+          style={{
+            width: "100%",
+            height: "8%",
+            backgroundColor: "rgba(0, 0, 0, 0.75)",
+            zIndex: 2,
+            justifyContent: "space-between",
+            padding: 25,
+            paddingTop: 10,
+            flexDirection: "row",
+            alignItems: "center",
+            position: "absolute",
+            bottom: 0,
+          }}
+        >
+          <>
+            <TouchableOpacity
+              onPress={() => resetPhoto()}
+              style={{ zIndex: 20, left: 0 }}
+            >
+              <Text style={{ zIndex: 20, color: colors.light }}>Retake</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => keepPicture(item, fileUri)}
+              style={{ zIndex: 20, left: 0 }}
+            >
+              <Text style={{ zIndex: 20, color: colors.light }}>Keep</Text>
+            </TouchableOpacity>
+          </>
+        </View>
+      )}
+
+      <ImageBackground
+        source={{ uri: fileUri }}
+        style={{
+          flex: 1,
+          zIndex: 1,
+        }}
+      />
+    </SafeAreaView>
+  );
+};
 
 export default class CameraScreen extends React.Component {
   static contextType = ItemContext;
@@ -45,6 +170,9 @@ export default class CameraScreen extends React.Component {
     whiteBalance: "auto",
     ratio: "16:9",
     item: null,
+    optionsModal: false,
+    cameraPreview: false,
+    fileUri: null,
   };
 
   zoomOut() {
@@ -102,39 +230,7 @@ export default class CameraScreen extends React.Component {
   takePicture = async function () {
     if (this.camera) {
       const file = await this.camera.takePictureAsync();
-
-      var data = new FormData();
-      data.append(
-        "data",
-        `{"o:ingester": "upload", "file_index": 0, "o:item": {"o:id": ${this.state.item[0]}}, "dcterms:title": [{"type": "literal", "property_id": 1, "@value": "picture.jpg"}]}`
-      );
-      data.append("file[0]", {
-        name: "placeholder.jpg",
-        uri: file.uri,
-        type: "image/jpg",
-      });
-
-      var config = {
-        method: "post",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "multipart/form-data",
-        },
-        body: data,
-      };
-
-      SecureStore.getItemAsync(this.state.item[1][1]).then((res) => {
-        fetch(
-          `http://${this.state.item[1][0]}/api/media?key_identity=${this.state.item[1][1]}&key_credential=${res}`,
-          config
-        )
-          .then((responseData) => {
-            console.log(JSON.stringify(responseData));
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      });
+      this.setState({ cameraPreview: true, fileUri: file.uri });
     }
   };
 
@@ -201,10 +297,15 @@ export default class CameraScreen extends React.Component {
               <Text style={styles.flipText}> - </Text>
             </TouchableOpacity> */}
           <SmallButton
+            style={styles.af}
             title={"AF:" + this.state.autoFocus}
             onPress={this.toggleFocus.bind(this)}
           />
-          <Button title="snap" onPress={this.takePicture.bind(this)} />
+          <SmallButton
+            style={styles.snap}
+            title="snap"
+            onPress={this.takePicture.bind(this)}
+          />
         </View>
       </RNCamera>
     );
@@ -214,7 +315,18 @@ export default class CameraScreen extends React.Component {
     let item = this.context;
     return (
       <SafeAreaView style={styles.container}>
-        {this.renderCamera(item)}
+        {this.state.cameraPreview ? (
+          <CameraPreview
+            resetPhoto={() =>
+              this.setState({ cameraPreview: false, fileUri: null })
+            }
+            navigation={this.props.navigation}
+            item={this.state.item}
+            fileUri={this.state.fileUri}
+          />
+        ) : (
+          this.renderCamera(item)
+        )}
       </SafeAreaView>
     );
   }
@@ -258,32 +370,6 @@ const styles = StyleSheet.create({
     zIndex: 2,
     left: 2,
   },
-  picButton: {
-    backgroundColor: "darkseagreen",
-  },
-  facesContainer: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    left: 0,
-    top: 0,
-  },
-  face: {
-    padding: 10,
-    borderWidth: 2,
-    borderRadius: 2,
-    position: "absolute",
-    borderColor: "#FFD700",
-    justifyContent: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  faceText: {
-    color: "#FFD700",
-    fontWeight: "bold",
-    textAlign: "center",
-    margin: 10,
-    backgroundColor: "transparent",
-  },
   text: {
     padding: 10,
     borderWidth: 2,
@@ -299,11 +385,15 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   af: {
-    top: 30,
     left: 30,
   },
   snap: {
-    position: "absolute",
-    bottom: 50,
+    left: width / 2 - 15,
+    bottom: 30,
+  },
+  children: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
   },
 });
