@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     height: 2,
     backgroundColor: colors.primary,
     width: "100%",
-    marginVertical: 20,
+    marginVertl: 20,
   },
   shadow: {
     position: "absolute",

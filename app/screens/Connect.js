@@ -39,15 +39,16 @@ function Connect({ navigation }) {
   const [showData, setShowData] = useState("");
   const [invalidkeys, setInvalidKeys] = useState(false);
   const [invalidhost, setInvalidHost] = useState(false);
-  
+    
+  //move to a separate authentication file
   async function storeUserSession(host, identity, credential) {
-    await SecureStore.setItemAsync(identity, credential);
-    //figure out how to save this
-    setUser([host, identity]);
+    await SecureStore.setItemAsync('keys', `${identity},${credential}`);
+    await SecureStore.setItemAsync('host', host)
+    setUser(true);
   }
 
   const sendTest = (values) => {
-    console.log("valid");
+    console.log("sending test");
     let payload = {
       "dcterms:title": [
         {

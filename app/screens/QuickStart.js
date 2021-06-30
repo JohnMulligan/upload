@@ -22,14 +22,15 @@ const { width, height } = Dimensions.get("window");
 function QuickStart({ navigation }) {
   const { user, setUser } = useContext(AuthContext);
 
+  //move to a separate authentication file
   function logOut() {
-    SecureStore.deleteItemAsync(user[1])
-      .then((res) => setUser(null))
+    SecureStore.deleteItemAsync("keys")
+      .then(setUser(null))
       .catch((error) => console.log("error", error));
   }
+
   return (
     <Screen style={{ flex: 1, alignItems: "center" }}>
-      <Header title="Home" />
       <Card activeOpacity={1} title="Create New Item">
         <TouchableOpacity
           onPress={() =>

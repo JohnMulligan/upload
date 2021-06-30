@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { View, Image, Platform, StyleSheet, Dimensions } from "react-native";
+import { View, Image, Platform, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
 import Header from "../components/Header";
 import ItemScreen from "../components/ItemScreen";
 import Text from "../components/Text";
@@ -14,6 +14,7 @@ import { fetchResourceTemplates } from "../../api/utils/Omeka";
 
 import ItemContext from "../../api/auth/itemContext";
 import AuthContext from "../../api/auth/context";
+import * as SecureStore from "expo-secure-store";
 
 const { width, height } = Dimensions.get("window");
 
@@ -26,16 +27,22 @@ function UploadMedia({ navigation, route }) {
   const { item, setItem } = useContext(ItemContext);
   const { user, setUser } = useContext(AuthContext);
 
+  const [currentPage, setCurrentPage] = useState(1);
+
   let templates = [];
 
   useEffect(() => {
-    fetchResourceTemplates("158.101.99.206")
-      .then((response) =>
-        response.map((item) =>
-          templates.push({ label: item["o:label"], value: item["o:label"] })
-        )
-      )
-      .catch((error) => console.log(error));
+    SecureStore.getItemAsync("host")
+      .then((host) => {
+        fetchResourceTemplates(host)
+          .then((response) =>
+            response.map((item) =>
+              templates.push({ label: item["o:label"], value: item["o:label"] })
+            )
+          )
+          .catch((error) => console.log(error));
+      })
+      .catch((error) => console.log("no host"));
   });
 
   const skip = () => {
@@ -52,20 +59,30 @@ function UploadMedia({ navigation, route }) {
         style={{
           flexDirection: "row",
           position: "absolute",
-          backgroundColor: 'rgba(255, 255, 255, .5)',
+          backgroundColor: "rgba(255, 255, 255, .5)",
           zIndex: 10,
           width: "100%",
           padding: 15,
           paddingTop: 50,
         }}
       >
-        <Image
-          source={require("../config/Icons/information.png")}
-          style={{ width: 20, height: 20 }}
-        />
-        <Text weight = "medium"> {item[0]}, Page {route.params.singlePage} </Text>
+        <TouchableOpacity>
+          <Image
+            source={require("../config/Icons/information.png")}
+            style={{ width: 20, height: 20 }}
+          />
+        </TouchableOpacity>
+        <Text weight="medium">{item}, </Text>
+        {route.params.type == 0 && <Text>Page {route.params.singlePage}</Text>}
+        {route.params.type == 1 && <Text>Page {currentPage}</Text>}
+        {route.params.type == 2 && <Text>Set page number</Text>}
       </View>
-      <Camera navigation={navigation} />
+      <Camera
+        navigation={navigation}
+        params={route.params}
+        page={currentPage}
+        setPage={setCurrentPage}
+      />
       {/* <NavigationButton
         onPress={() => navigation.goBack()}
         label="Back"

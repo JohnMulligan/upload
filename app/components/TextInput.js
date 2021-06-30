@@ -12,7 +12,7 @@ function TInput({name, value, textColor = 'black', required, note, style, ...oth
         {name && <Text style={{paddingBottom: 2, paddingLeft: 2}}>{name}</Text>}
         {required && <Text>*</Text>}
       </View>
-      <TextInput value = {value} autocorrect = {false} style={[{color: textColor}, styles.input]} {...otherProps} />
+      <TextInput multiline = {true} value = {value} autocorrect = {false} style={[{color: textColor}, styles.input]} {...otherProps} />
       {note && (
         <Text style={{fontSize: 12, color: colors.primary, padding: 2}}>
           {note}
@@ -28,10 +28,13 @@ const styles = StyleSheet.create({
     
   },
   input: {
+    marginBottom: 5,
     borderRadius: 10,
     borderWidth: 2,
     padding: 5,
-    height: 40,
+    paddingTop: 10,
+    minHeight: 40,
+    maxHeight: 200,
     paddingHorizontal: 10,
     borderColor: colors.primary,
     fontFamily: 'Barlow_400Regular',

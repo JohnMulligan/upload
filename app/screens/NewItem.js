@@ -42,6 +42,7 @@ const { width, height } = Dimensions.get("window");
 function NewItem({ navigation }) {
   const { user, setUser } = useContext(AuthContext);
   const { item, setItem } = useContext(ItemContext);
+  const [host, setHost] = useState("");
 
   const [length, setLength] = useState(2);
   const [resourceTemplates, setResourceTemplates] = useState([]);
@@ -55,18 +56,20 @@ function NewItem({ navigation }) {
   const [types, setTypes] = useState({});
   const [values, setValues] = useState({});
 
-  let empty = {};
-
+  //make authentication pathway here for keys
   useEffect(() => {
     let isMounted = true;
-    fetchResourceTemplates(user[0])
-      .then((response) => {
-        if (isMounted) setResourceTemplates(response);
-      })
-      .catch((error) => console.log(error));
-    return () => {
-      isMounted = false;
-    };
+    SecureStore.getItemAsync("host").then((host) => {
+      setHost(host);
+      fetchResourceTemplates(host)
+        .then((response) => {
+          if (isMounted) setResourceTemplates(response);
+        })
+        .catch((error) => console.log(error));
+      return () => {
+        isMounted = false;
+      };
+    });
   }, []);
 
   const loadFields = async (value, idx) => {
@@ -77,19 +80,19 @@ function NewItem({ navigation }) {
     //voids "Select an item"
     if (idx != 0) {
       setTitles(
-        await getPropertiesInResourceTemplate(user[0], idx).then((res) =>
+        await getPropertiesInResourceTemplate(host, idx).then((res) =>
           res.map((prop, idx) => prop.data["o:label"])
         )
       );
       setTypes(
-        await getPropertiesInResourceTemplate(user[0], idx).then((res) =>
+        await getPropertiesInResourceTemplate(host, idx).then((res) =>
           res.map((prop, idx) => prop.data)
         )
       );
-      await getPropertiesInResourceTemplate(user[0], idx).then((res) =>
+      await getPropertiesInResourceTemplate(host, idx).then((res) =>
         res.map((type) => (values[type] = ""))
       );
-      setIDs(await getPropertyIds(user[0], idx).then((res) => res));
+      setIDs(await getPropertyIds(host, idx).then((res) => res));
     }
   };
 
@@ -129,20 +132,21 @@ function NewItem({ navigation }) {
     ]);
     IDs.map((id, idx) => (payload[types[idx]["o:term"]] = v[idx]));
     payload["o:resource_template"] = {
-      "@id": `http://${user[0]}/api/resource_templates/${templateId}`,
+      "@id": `http://${host}/api/resource_templates/${templateId}`,
       "o:id": templateId,
     };
     let templates = getItems()[0];
     payload["o:resource_class"] = {
       "o:id": templates.class,
     };
-    SecureStore.getItemAsync(user[1])
+    //make authentication pathway here for keys
+    SecureStore.getItemAsync("keys")
       .then((res) =>
         axios
-          .post(`http://${user[0]}/api/items`, payload, {
+          .post(`http://${host}/api/items`, payload, {
             params: {
-              key_identity: user[1],
-              key_credential: res,
+              key_identity: res.split(",")[0],
+              key_credential: res.split(",")[1],
             },
           })
           .then((response) => {
@@ -168,7 +172,7 @@ function NewItem({ navigation }) {
       exit={() => navigation.navigate("Quick Start")}
     >
       <Header title="Create New Item" />
-      <ScrollView style={styles.body}>
+      <ScrollView bounces = {false} style={styles.body}>
         <Formik initialValues={types} onSubmit={(values) => createItem(values)}>
           {({ handleBlur, handleSubmit, resetForm, values }) => (
             <View>

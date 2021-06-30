@@ -8,7 +8,7 @@ const { width, height } = Dimensions.get("window");
 
 function Header({ title, body, style, ...otherProps }) {
   return (
-    <Text weight="medium" style={styles.header}>
+    <Text weight="medium" style={style, styles.header}>
       {title}
     </Text>
   );

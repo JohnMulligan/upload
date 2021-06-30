@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import Button from "./Button";
 import SmallButton from "./SmallButton";
+import NavigationButton from "./NavigationButton";
+
 import Modal from "./Modal";
 import ModalButton from "./ModalButton";
 import { RNCamera } from "react-native-camera";
@@ -25,10 +27,20 @@ import RNFS from "react-native-fs";
 
 const { width, height } = Dimensions.get("window");
 
-const CameraPreview = ({ fileUri, item, navigation, resetPhoto }: any) => {
+const CameraPreview = ({
+  fileUri,
+  item,
+  navigation,
+  params,
+  page,
+  setPage,
+  resetPhoto,
+}: any) => {
   const [optionsModal, setOptionsModal] = useState(false);
-  
+  const [confirmButton, setConfirmButton] = useState(false);
+
   keepPicture = function (item, fileUri) {
+    console.log(item);
     var data = new FormData();
     data.append(
       "data",
@@ -49,26 +61,52 @@ const CameraPreview = ({ fileUri, item, navigation, resetPhoto }: any) => {
       body: data,
     };
 
-    SecureStore.getItemAsync(item[1][1]).then((res) => {
-      fetch(
-        `http://${item[1][0]}/api/media?key_identity=${item[1][1]}&key_credential=${res}`,
-        config
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          RNFS.readFile(fileUri, "base64").then((file_content) => {
-            Crypto.digestStringAsync(
-              Crypto.CryptoDigestAlgorithm.SHA256,
-              file_content
-            ).then((digest) => console.log("Digest: ", digest));
-          });
-          setOptionsModal(true);
-        })
+    SecureStore.getItemAsync("host").then((host) => {
+      SecureStore.getItemAsync("keys").then((keys) => {
+        console.log(
+          `http://${host}/api/media?key_identity=${
+            keys.split(",")[0]
+          }&key_credential=${keys.split(",")[1]}`
+        );
+        fetch(
+          `http://${host}/api/media?key_identity=${
+            keys.split(",")[0]
+          }&key_credential=${keys.split(",")[1]}`,
+          config
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            console.log("fileUri", fileUri, page, data);
+            RNFS.readFile(fileUri, "base64").then((string) => {
+              Crypto.digestStringAsync(
+                Crypto.CryptoDigestAlgorithm.SHA256,
+                string
+              ).then((digest) => console.log("Digest: ", digest));
+            });
+            if (params.type == 0) navigation.navigate("Confirm");
+            else if (params.type == 1) {
+              resetPhoto();
+              setPage(page + 1);
+              setConfirmButton(true);
+            } else setOptionsModal(true);
+          })
 
-        .catch((err) => {
-          console.log(err);
-        });
+          .catch((err) => {
+            console.log(err);
+          });
+      });
     });
+  };
+
+  const uploadSamePageMedia = () => {
+    setOptionsModal(false);
+    resetPhoto();
+  };
+
+  const uploadNextPageMedia = () => {
+    setOptionsModal(false);
+    resetPhoto();
+    setPage(page + 1);
   };
 
   return (
@@ -80,25 +118,38 @@ const CameraPreview = ({ fileUri, item, navigation, resetPhoto }: any) => {
         height: "100%",
       }}
     >
-      {optionsModal ? (
+      {confirmButton && (
+        <NavigationButton
+          style={{
+            position: "absolute",
+            bottom: 30,
+            right: 30,
+            zIndex: 40,
+          }}
+          direction="right"
+          onPress={() => navigation.navigate("Confirm")}
+        />
+      )}
+
+      {optionsModal && params.type == 2 ? (
         <Modal title="Media on page 1 added. Continue adding?">
           <View style={styles.children}>
             <ModalButton
-              onPress={() => uploadMedia()}
+              onPress={() => uploadSamePageMedia()}
               line={2}
-              title="ON CURRENT PAGE ()"
+              title={`ON CURRENT PAGE ${page}`}
             />
             <ModalButton
-              onPress={() => navigation.navigate("Quick Start")}
+              onPress={() => uploadNextPageMedia()}
               line={2}
-              title="ON NEXT PAGE ()"
+              title={`ON NEXT PAGE \>${page + 1}`}
             />
           </View>
           <ModalButton
             line={1}
             title={"SAVE & FINISH"}
             color={colors.light}
-            onPress={() => navigation.navigate("Quick Start")}
+            onPress={() => navigation.navigate("Confirm")}
           />
         </Modal>
       ) : (
@@ -306,6 +357,16 @@ export default class CameraScreen extends React.Component {
             title="snap"
             onPress={this.takePicture.bind(this)}
           />
+          <NavigationButton
+            style={{
+              position: "absolute",
+              bottom: 30,
+              right: 30,
+              zIndex: 40,
+            }}
+            direction="right"
+            onPress={() => this.props.navigation.navigate("Confirm")}
+          />
         </View>
       </RNCamera>
     );
@@ -321,6 +382,9 @@ export default class CameraScreen extends React.Component {
               this.setState({ cameraPreview: false, fileUri: null })
             }
             navigation={this.props.navigation}
+            params={this.props.params}
+            page={this.props.page}
+            setPage={this.props.setPage}
             item={this.state.item}
             fileUri={this.state.fileUri}
           />
