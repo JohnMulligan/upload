@@ -29,6 +29,13 @@ function QuickStart({ navigation }) {
       .catch((error) => console.log("error", error));
   }
 
+  function loadCamera() {
+    navigation.navigate("Create Item", {
+      screen: "Upload Media",
+      params: { type: 1, testItem: 337 },
+    });
+  }
+
   return (
     <Screen style={{ flex: 1, alignItems: "center" }}>
       <Card activeOpacity={1} title="Create New Item">
@@ -59,7 +66,11 @@ function QuickStart({ navigation }) {
       <Card
         title="Recently Added"
         onPress={() => navigation.navigate("View All Items")}
-      ></Card>
+      >
+        <TouchableOpacity onPress={() => loadCamera()}>
+          <Text>Load Camera</Text>
+        </TouchableOpacity>
+      </Card>
     </Screen>
   );
 }

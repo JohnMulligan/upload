@@ -8,6 +8,7 @@ import {
   TouchableWithoutFeedback,
   Dimensions,
   SafeAreaView,
+  Platform,
   ImageBackground,
 } from "react-native";
 import Button from "./Button";
@@ -24,6 +25,7 @@ import ItemContext from "../../api/auth/itemContext";
 import * as SecureStore from "expo-secure-store";
 import * as Crypto from "expo-crypto";
 import RNFS from "react-native-fs";
+import ReactNativeBlobUtil from 'react-native-blob-util'
 
 const { width, height } = Dimensions.get("window");
 
@@ -39,97 +41,20 @@ const CameraPreview = ({
   const [optionsModal, setOptionsModal] = useState(false);
   const [confirmButton, setConfirmButton] = useState(false);
 
-  function uploadBegin(response) {
-    var jobId = response.jobId;
-    console.log("UPLOAD HAS BEGUN! JobId: " + jobId);
-  }
-
-  function uploadProgress(response) {
-    var percentage = Math.floor(
-      (response.totalBytesSent / response.totalBytesExpectedToSend) * 100
-    );
-    console.log("UPLOAD IS " + percentage + "% DONE!");
-  }
-
-  // upload = function (item, fileUri) {
-  //   RNFS.uploadFiles({
-  //     toUrl:
-  //       "http://158.101.99.206/api/media?key_identity=OICzKK7enYzPejBUNe4n3OJXclbkdxl7&key_credential=JVulf5Tg6kjM4ozB9LQ61aOVeQ9hjtPf",
-  //     files: [
-  //       {
-  //         filename: "picture.jpg",
-  //         filepath: fileUri,
-  //         filetype: "image/jpg",
-  //       },
-  //     ],
-  //     method: "POST",
-  //     headers: {
-  //       Accept: "application/json",
-  //     },
-  //     fields: {
-  //       data: {
-  //         "o:ingester": "upload",
-  //         file_index: 0,
-  //         "o:item": {
-  //           "o:id": item[0],
-  //         },
-  //         "dcterms:title": [
-  //           {
-  //             type: "literal",
-  //             property_id: 1,
-  //             "@value": fileUri.split("/")[fileUri.split("/").length - 1],
-  //           },
-  //         ],
-  //       },
-  //     },
-  //     begin: uploadBegin,
-  //     progress: uploadProgress,
-  //   })
-  //     .promise.then((response) => {
-  //       if (response.statusCode == 200) {
-  //         console.log("FILES UPLOADED!"); // response.statusCode, response.headers, response.body
-  //       } else {
-  //         console.log("SERVER ERROR", response);
-  //       }
-  //     })
-  //     .catch((err) => {
-  //       if (err.description === "cancelled") {
-  //         // cancelled by user
-  //       }
-  //       console.log(err);
-  //     });
-  // };
-
-  keepPicture = function (item, fileUri) {
-    console.log("keep picture", fileUri);
-    console.log(fileUri.split("/"));
+  keepPicture = async function (item, fileUri) {
+    if (!item) item = params.testItem;
     var data = new FormData();
-    RNFS.hash(fileUri, "sha256").then((res) => {
-      console.log('res', res)
-      data.append(
-        "data",
-        `{
-          "o:ingester": "upload", 
-          "file_index": 0, 
-          "o:item": {"o:id": ${item[0]}}, 
-          "dcterms:title": [{"type": "literal", "property_id": 1, "@value": "${
-            fileUri.split("/")[fileUri.split("/").length - 1]
-          }"}], 
-          "o:sha256": "${res}"
-        }`
-      );
-      data.append("file[0]", {
-        name: fileUri.split("/")[fileUri.split("/").length - 1],
-        uri: fileUri,
-        type: "image/jpg",
-      });
+    data.append(
+      "data",
+      `{"o:ingester": "upload", "file_index": 0, "o:item": {"o:id": ${item}}}`
+    );
+    data.append("file[0]", {
+      name: fileUri.split("/")[fileUri.split("/").length - 1],
+      uri: Platform.OS === "ios" ? fileUri.replace('file://', '') : fileUri,
+      type: "image/jpg",
     });
-
-    console.log(data._parts[1]);
-    //RNFS.hash(data["file[0]"].uri, "sha256").then((res) => console.log(res));
-
     var config = {
-      method: "post",
+      method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "multipart/form-data",
@@ -139,11 +64,6 @@ const CameraPreview = ({
 
     SecureStore.getItemAsync("host").then((host) => {
       SecureStore.getItemAsync("keys").then((keys) => {
-        console.log(
-          `http://${host}/api/media?key_identity=${
-            keys.split(",")[0]
-          }&key_credential=${keys.split(",")[1]}`
-        );
         fetch(
           `http://${host}/api/media?key_identity=${
             keys.split(",")[0]
@@ -152,16 +72,16 @@ const CameraPreview = ({
         )
           .then((res) => res.json())
           .then((data) => {
-            console.log("data", data["o:sha256"]);
-            RNFS.hash(fileUri, "sha256").then((res) => console.log(res));
+            console.log("respone", data);
+            RNFS.hash(fileUri, "sha256").then((res) => console.log("sha256:", res));
             if (params.type == 0) navigation.navigate("Confirm");
             else if (params.type == 1) {
               resetPhoto();
               setPage(page + 1);
               setConfirmButton(true);
             } else setOptionsModal(true);
+            //there is a React state update error here somewhere!!!!! 
           })
-
           .catch((err) => {
             console.log(err);
           });
@@ -272,7 +192,7 @@ export default class CameraScreen extends React.Component {
 
   componentDidMount() {
     const item = this.context;
-    this.setState({ item: item["item"] });
+    if (item) this.setState({ item: item["item"] });
     //item[1] holds other options (like user)
   }
 
@@ -352,7 +272,7 @@ export default class CameraScreen extends React.Component {
   takePicture = async function () {
     if (this.camera) {
       const file = await this.camera.takePictureAsync();
-      console.log("take picture", file.uri);
+      console.log("photo path", file.uri);
 
       this.setState({ cameraPreview: true, fileUri: file.uri });
     }
@@ -373,20 +293,21 @@ export default class CameraScreen extends React.Component {
           flex: 1,
           justifyContent: "space-between",
         }}
-        type={this.state.type}
-        flashMode={this.state.flash}
-        autoFocus={this.state.autoFocus}
-        autoFocusPointOfInterest={this.state.autoFocusPoint.normalized}
-        zoom={this.state.zoom}
-        whiteBalance={this.state.whiteBalance}
-        ratio={this.state.ratio}
-        focusDepth={this.state.depth}
+        // type={this.state.type}
+        // flashMode={this.state.flash}
+        // autoFocus={this.state.autoFocus}
+        // autoFocusPointOfInterest={this.state.autoFocusPoint.normalized}
+        // zoom={this.state.zoom}
+        // whiteBalance={this.state.whiteBalance}
+        // ratio={this.state.ratio}
+        // focusDepth={this.state.depth}
         androidCameraPermissionOptions={{
           title: "Permission to use camera",
           message: "We need your permission to use your camera",
           buttonPositive: "Ok",
           buttonNegative: "Cancel",
         }}
+        captureAudio={false}
       >
         <View style={StyleSheet.absoluteFill}>
           <View style={[styles.autoFocusBox, drawFocusRingPosition]} />
