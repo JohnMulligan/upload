@@ -25,7 +25,6 @@ import ItemContext from "../../api/auth/itemContext";
 import * as SecureStore from "expo-secure-store";
 import * as Crypto from "expo-crypto";
 import RNFS from "react-native-fs";
-import ReactNativeBlobUtil from 'react-native-blob-util'
 
 const { width, height } = Dimensions.get("window");
 
