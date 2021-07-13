@@ -120,7 +120,7 @@ function NewItem({ navigation }) {
   const createItem = () => {
     let payload = {};
     let title = values[titles[0]];
-    console.log("title", title);
+    console.log("title", values);
 
     let v = IDs.map((id, idx) => [
       {
@@ -172,10 +172,10 @@ function NewItem({ navigation }) {
       exit={() => navigation.navigate("Quick Start")}
     >
       <Header title="Create New Item" />
-      <ScrollView bounces = {false} style={styles.body}>
+      <ScrollView bounces={false} style={styles.body}>
         <Formik initialValues={types} onSubmit={(values) => createItem(values)}>
-          {({ handleBlur, handleSubmit, resetForm, values }) => (
-            <View>
+          {({ handleBlur, handleSubmit, resetForm, values }) => (<>
+            <View style = {{height: height-130}}>
               <Text style={{ paddingBottom: 2, paddingLeft: 2 }}>
                 Resource Templates
               </Text>
@@ -205,17 +205,15 @@ function NewItem({ navigation }) {
                 </View>
               )}
 
-              <Button
-                theme="dark"
-                style={{
-                  width: 0.7 * width,
-                  marginHorizontal: 0.1 * width,
-                  marginTop: 50,
-                }}
-                title="CREATE ITEM"
-                onPress={handleSubmit}
-              />
+              
             </View>
+            <NavigationButton
+                style={styles.next}
+                onPress={handleSubmit}
+                label="Done"
+                direction="right"
+              />
+              </>
           )}
         </Formik>
       </ScrollView>
@@ -239,12 +237,6 @@ function NewItem({ navigation }) {
           <View style={styles.shadow} />
         </>
       )}
-      <NavigationButton
-        style={styles.next}
-        onPress={() => next()}
-        label="Done"
-        direction="right"
-      />
     </ItemScreen>
   );
 }
@@ -255,6 +247,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     padding: 25,
+    height: '100%',
   },
   icon: {
     position: "absolute",
@@ -288,7 +281,7 @@ const styles = StyleSheet.create({
   next: {
     position: "absolute",
     bottom: 30,
-    right: 30,
+    right: 5,
   },
 });
 export default NewItem;

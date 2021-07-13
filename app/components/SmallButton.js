@@ -4,13 +4,14 @@ import Text from "./Text"
 
 import colors from "../config/colors";
 
-function SmallButton({ title, onPress, style }) {
+function SmallButton({ title, onPress, textStyle, style, ...otherProps}) {
   return (
     <TouchableOpacity
       style={[styles.button, style]}
       onPress={onPress}
+      {...otherProps}
     >
-      <Text style = {styles.text} weight = "bold">{title}</Text>
+      <Text style = {[styles.text, textStyle]} weight = "bold">{title}</Text>
     </TouchableOpacity>
   );
 }
@@ -23,12 +24,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     height: 30,
-    width: 30,
+    minWidth: 30,
   },
   text: {
+    paddingHorizontal: 5,
     color: colors.primary,
     lineHeight: 24,
-    fontSize: 24,
+    fontSize: 14,
     textAlign: 'center'
   },
 });

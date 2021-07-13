@@ -4,7 +4,7 @@
   secondary: "#0D3B39",
   black: "#000",
   white: "#fff",
-  gray: "rgba(196, 196, 196, .75)",
+  grey: "#838383",
   medium: "#6e6969",
   // light: "#f8f4f4",
   light: "#F7F5EC",

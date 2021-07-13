@@ -1,37 +1,71 @@
 import React from "react";
-import { StyleSheet, View, TouchableOpacity } from "react-native";
+import { StyleSheet, View, ImageBackground, TouchableOpacity } from "react-native";
 import Text from "./Text";
 
 import colors from "../config/colors";
 
-function Option({ text, onPress, selected, style }) {
+function Option({ text, description, onPress, selected, style, children }) {
   return (
-    <View style={(style, styles.container)}>
-      {selected ? (
-        <Text weight="medium">{text}</Text>
-      ) : (
-        <Text style={{ color: colors.primary }}>{text}</Text>
-      )}
-      <TouchableOpacity
-        style={[selected && {backgroundColor: colors.primary}, styles.select]}
-        onPress={onPress}
-      ></TouchableOpacity>
-    </View>
+    <TouchableOpacity
+      style={[
+        selected
+          ? { borderColor: colors.primary, shadowColor: "black" }
+          : { borderColor: colors.blue, shadowColor: "white" },
+        { backgroundColor: colors.light },
+        style,
+        styles.box,
+      ]}
+      onPress={onPress}
+    >
+      <View style={{ width: "85%" }}>
+        <Text
+          style={{ fontSize: 18, color: colors.primary, marginBottom: 5 }}
+          weight="medium"
+        >
+          {text}
+        </Text>
+        {description && (
+          <Text style={{ color: colors.grey, fontSize: 14 }}>
+            {description}
+          </Text>
+        )}
+        {children}
+      </View>
+      <View style={styles.checkContainer}>
+        {selected ? <ImageBackground source = {require('../config/Icons/check.png')} style={styles.check} /> : <View style = {styles.check}/>}
+      </View>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginVertical: 20
-  },
-  select: {
-    width: 20,
-    height: 20,
+  box: {
+    width: "100%",
+    padding: 10,
+    minHeight: 45,
     borderRadius: 10,
-    borderColor: colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.17,
+    shadowRadius: 3.65,
     borderWidth: 2,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginVertical: 8,
+  },
+  checkContainer: {
+    width: "15%",
+    alignItems: "center",
+  },
+  check: {
+    width: 25,
+    height: 25,
+    borderColor: colors.primary,
+    borderWidth: 1,
+    borderRadius: 5,
   },
 });
 

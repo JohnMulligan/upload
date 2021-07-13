@@ -22,7 +22,6 @@ const { width, height } = Dimensions.get("window");
 function QuickStart({ navigation }) {
   const { user, setUser } = useContext(AuthContext);
 
-  //move to a separate authentication file
   function logOut() {
     SecureStore.deleteItemAsync("keys")
       .then(setUser(null))
@@ -58,11 +57,7 @@ function QuickStart({ navigation }) {
       <Card
         title="Find Item"
         onPress={() => navigation.navigate("Find and Edit")}
-      >
-        <TouchableOpacity onPress={() => logOut()}>
-          <Text>Log out</Text>
-        </TouchableOpacity>
-      </Card>
+      ></Card>
       <Card
         title="Recently Added"
         onPress={() => navigation.navigate("View All Items")}
@@ -71,6 +66,9 @@ function QuickStart({ navigation }) {
           <Text>Load Camera</Text>
         </TouchableOpacity>
       </Card>
+      <TouchableOpacity onPress={() => logOut()}>
+        <Text>Log out</Text>
+      </TouchableOpacity>
     </Screen>
   );
 }

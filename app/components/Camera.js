@@ -35,55 +35,95 @@ const CameraPreview = ({
   params,
   page,
   setPage,
+  type,
   resetPhoto,
 }: any) => {
   const [optionsModal, setOptionsModal] = useState(false);
   const [confirmButton, setConfirmButton] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [successresponse, setResponse] = useState(
+    "You should see your response here"
+  );
+  const [pageNumberModal, setPageNumberModal] = useState(false);
+
+  next = function () {
+    const type = params.type;
+    if (type == 1) {
+      uploadNextPageMedia();
+    } else if (type == 2) {
+      setOptionsModal(true);
+    } else {
+      navigation.navigate("Confirm");
+    }
+  };
 
   keepPicture = async function (item, fileUri) {
     if (!item) item = params.testItem;
-    var data = new FormData();
-    data.append(
-      "data",
-      `{"o:ingester": "upload", "file_index": 0, "o:item": {"o:id": ${item}}}`
-    );
-    data.append("file[0]", {
-      name: fileUri.split("/")[fileUri.split("/").length - 1],
-      uri: Platform.OS === "ios" ? fileUri.replace('file://', '') : fileUri,
-      type: "image/jpg",
-    });
-    var config = {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "multipart/form-data",
+    var files = [
+      {
+        name: "file[0]",
+        filename: fileUri.split("/")[fileUri.split("/").length - 1],
+        filepath:
+          Platform.OS === "ios" ? fileUri.replace("file://", "") : fileUri,
+        filetype: "image/jpeg",
       },
-      body: data,
+    ];
+
+    var uploadBegin = (response) => {
+      var jobId = response.jobId;
+      console.log("UPLOAD HAS BEGUN! JobId: " + jobId);
+    };
+
+    var uploadProgress = (response) => {
+      var percentage = Math.floor(
+        (response.totalBytesSent / response.totalBytesExpectedToSend) * 100
+      );
+      setUploadProgress(percentage);
+      console.log("UPLOAD IS " + percentage + "% DONE!");
     };
 
     SecureStore.getItemAsync("host").then((host) => {
       SecureStore.getItemAsync("keys").then((keys) => {
-        fetch(
-          `http://${host}/api/media?key_identity=${
+        RNFS.uploadFiles({
+          toUrl: `http://${host}/api/media?key_identity=${
             keys.split(",")[0]
           }&key_credential=${keys.split(",")[1]}`,
-          config
-        )
-          .then((res) => res.json())
-          .then((data) => {
-            console.log("respone", data);
-            RNFS.hash(fileUri, "sha256").then((res) => console.log("sha256:", res));
-            if (params.type == 0) navigation.navigate("Confirm");
-            else if (params.type == 1) {
-              resetPhoto();
-              setPage(page + 1);
-              setConfirmButton(true);
-            } else setOptionsModal(true);
-            //there is a React state update error here somewhere!!!!! 
-          })
-          .catch((err) => {
-            console.log(err);
-          });
+          files: files,
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+          },
+          fields: {
+            data: `{
+              "o:ingester": "upload", 
+              "file_index": 0, 
+              "o:item": {"o:id": ${item} }, 
+              "bibo:number": [
+                {
+                  "type": "literal", 
+                  "property_id": 108,
+                  "@value": "1"
+                }
+              ]
+            }`
+          },
+          begin: uploadBegin,
+          progress: uploadProgress,
+        }).promise.then((response) => {
+          if (response.statusCode == 200) {
+            jsonresponse = JSON.parse(response.body);
+            RNFS.hash(fileUri, "sha256")
+              .then((rnhash) => {
+                if (jsonresponse["o:sha256"] == rnhash) {
+                  console.log("same!!");
+                  next();
+                }
+              })
+              .catch((error) => console.log("error", error));
+          } else {
+            console.log("SERVER ERROR", response);
+          }
+        });
       });
     });
   };
@@ -122,7 +162,7 @@ const CameraPreview = ({
       )}
 
       {optionsModal && params.type == 2 ? (
-        <Modal title="Media on page 1 added. Continue adding?">
+        <Modal title={`Media on page ${page} added. Continue adding?`}>
           <View style={styles.children}>
             <ModalButton
               onPress={() => uploadSamePageMedia()}
@@ -143,36 +183,85 @@ const CameraPreview = ({
           />
         </Modal>
       ) : (
-        <View
-          style={{
-            width: "100%",
-            height: "8%",
-            backgroundColor: "rgba(0, 0, 0, 0.75)",
-            zIndex: 2,
-            justifyContent: "space-between",
-            padding: 25,
-            paddingTop: 10,
-            flexDirection: "row",
-            alignItems: "center",
-            position: "absolute",
-            bottom: 0,
-          }}
-        >
-          <>
-            <TouchableOpacity
+        <>
+          {pageNumberModal ? (
+            <Modal title={`Set page number`}>
+              <View style={styles.children}>
+                <ModalButton
+                  onPress={() => setPage(page - 1)}
+                  line={3}
+                  title={`-`}
+                />
+                <ModalButton line={3} title={page} />
+                <ModalButton
+                  onPress={() => setPage(page + 1)}
+                  line={3}
+                  title={`+`}
+                />
+              </View>
+              <View style={styles.children}>
+                <ModalButton
+                  line={2}
+                  title={"SAVE"}
+                  color={colors.light}
+                  onPress={() => setPageNumberModal(false)}
+                />
+                <ModalButton
+                  line={2}
+                  title={"CANCEL"}
+                  color={colors.light}
+                  onPress={() => setPageNumberModal(false)}
+                />
+              </View>
+            </Modal>
+          ) : null}
+          <View
+            style={{
+              width: "100%",
+              height: "8%",
+              zIndex: 2,
+              justifyContent: "space-between",
+              padding: 25,
+              paddingTop: 10,
+              flexDirection: "row",
+              alignItems: "center",
+              position: "absolute",
+              bottom: 0,
+            }}
+          >
+            <SmallButton
               onPress={() => resetPhoto()}
-              style={{ zIndex: 20, left: 0 }}
-            >
-              <Text style={{ zIndex: 20, color: colors.light }}>Retake</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => keepPicture(item, fileUri)}
-              style={{ zIndex: 20, left: 0 }}
-            >
-              <Text style={{ zIndex: 20, color: colors.light }}>Keep</Text>
-            </TouchableOpacity>
-          </>
-        </View>
+              style={{ backgroundColor: colors.primary }}
+              textStyle={{ color: colors.light }}
+              title="retake"
+            />
+            {/* <Text style={{ color: "white" }}>Uploaded {uploadProgress}%</Text> */}
+            <View style={{ flexDirection: "row" }}>
+              <SmallButton
+                activeOpacity={params.type == 2 ? 0 : 1}
+                // onPress={params.type == 2 ? () => setPageNumberModal(true) : null}
+                onPress={() => setPageNumberModal(true)}
+                title={"PAGE " + page}
+                style={{
+                  paddingRight: 50,
+                  backgroundColor: colors.light,
+                  alignItems: "flex-start",
+                }}
+              />
+              <SmallButton
+                onPress={() => keepPicture(item, fileUri)}
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  backgroundColor: colors.primary,
+                  width: 50,
+                }}
+                textStyle={{ color: colors.light }}
+                title="keep"
+              />
+            </View>
+          </View>
+        </>
       )}
 
       <ImageBackground
@@ -191,8 +280,9 @@ export default class CameraScreen extends React.Component {
 
   componentDidMount() {
     const item = this.context;
-    if (item) this.setState({ item: item["item"] });
-    //item[1] holds other options (like user)
+    if (item) this.setState({ item: item["item"][0] });
+    //item[1] holds other options (like user, booleans, etc.)
+    this.setState({ page: this.props.page });
   }
 
   state = {
@@ -214,67 +304,73 @@ export default class CameraScreen extends React.Component {
     optionsModal: false,
     cameraPreview: false,
     fileUri: null,
+    pageNumberModal: false,
   };
 
-  zoomOut() {
-    this.setState({
-      zoom: this.state.zoom - 0.1 < 0 ? 0 : this.state.zoom - 0.1,
-    });
-  }
+  // zoomOut() {
+  //   this.setState({
+  //     zoom: this.state.zoom - 0.1 < 0 ? 0 : this.state.zoom - 0.1,
+  //   });
+  // }
 
-  zoomIn() {
-    this.setState({
-      zoom: this.state.zoom + 0.1 > 1 ? 1 : this.state.zoom + 0.1,
-    });
-  }
+  // zoomIn() {
+  //   this.setState({
+  //     zoom: this.state.zoom + 0.1 > 1 ? 1 : this.state.zoom + 0.1,
+  //   });
+  // }
 
-  setFocusDepth(depth) {
-    this.setState({
-      depth,
-    });
-  }
+  // setFocusDepth(depth) {
+  //   this.setState({
+  //     depth,
+  //   });
+  // }
 
-  toggleFocus() {
-    this.setState({
-      autoFocus: this.state.autoFocus === "on" ? "off" : "on",
-    });
-  }
+  // toggleFocus() {
+  //   this.setState({
+  //     autoFocus: this.state.autoFocus === "on" ? "off" : "on",
+  //   });
+  // }
 
   touchToFocus(event) {
     const { pageX, pageY } = event.nativeEvent;
     const screenWidth = Dimensions.get("window").width;
     const screenHeight = Dimensions.get("window").height;
     const isPortrait = screenHeight > screenWidth;
-
-    let x = pageX / screenWidth;
-    let y = pageY / screenHeight;
-    // Coordinate transform for portrait. See autoFocusPointOfInterest in docs for more info
-    if (isPortrait) {
-      x = pageY / screenHeight;
-      y = -(pageX / screenWidth) + 1;
-    }
-
-    this.setState({
-      autoFocusPoint: {
-        normalized: { x, y },
-        drawRectPosition: { x: pageX, y: pageY },
-      },
-    });
   }
 
-  setFocusDepth(depth) {
-    this.setState({
-      depth,
-    });
-  }
+  //   let x = pageX / screenWidth;
+  //   let y = pageY / screenHeight;
+  //   // Coordinate transform for portrait. See autoFocusPointOfInterest in docs for more info
+  //   if (isPortrait) {
+  //     x = pageY / screenHeight;
+  //     y = -(pageX / screenWidth) + 1;
+  //   }
+
+  //   this.setState({
+  //     autoFocusPoint: {
+  //       normalized: { x, y },
+  //       drawRectPosition: { x: pageX, y: pageY },
+  //     },
+  //   });
+  // }
+
+  // setFocusDepth(depth) {
+  //   this.setState({
+  //     depth,
+  //   });
+  // }
 
   takePicture = async function () {
     if (this.camera) {
       const file = await this.camera.takePictureAsync();
-      console.log("photo path", file.uri);
+      console.log("photo path", file);
 
       this.setState({ cameraPreview: true, fileUri: file.uri });
     }
+  };
+
+  assignPageNumber = function () {
+    this.setState({ pageNumberModal: true });
   };
 
   renderCamera(item) {
@@ -292,7 +388,7 @@ export default class CameraScreen extends React.Component {
           flex: 1,
           justifyContent: "space-between",
         }}
-        // type={this.state.type}
+        type={this.state.type}
         // flashMode={this.state.flash}
         // autoFocus={this.state.autoFocus}
         // autoFocusPointOfInterest={this.state.autoFocusPoint.normalized}
@@ -308,27 +404,26 @@ export default class CameraScreen extends React.Component {
         }}
         captureAudio={false}
       >
-        <View style={StyleSheet.absoluteFill}>
+        {/* <View style={StyleSheet.absoluteFill}>
           <View style={[styles.autoFocusBox, drawFocusRingPosition]} />
-          <TouchableWithoutFeedback onPress={this.touchToFocus.bind(this)}>
+          <TouchableWithoutFeedback style = {{zIndex: 100}} onPress={this.touchToFocus.bind(this)}>
             <View style={{ flex: 1 }} />
           </TouchableWithoutFeedback>
-        </View>
+        </View> */}
 
-        <View style={{ bottom: 0, position: "absolute" }}>
-          <Slider
+        {/* <Slider
             style={{ width: 150, marginTop: 15, alignSelf: "flex-end" }}
             onValueChange={this.setFocusDepth.bind(this)}
             step={0.1}
             disabled={this.state.autoFocus === "on"}
-          />
-          {this.state.zoom !== 0 && (
+          /> */}
+        {/* {this.state.zoom !== 0 && (
             <Text style={[styles.flipText, styles.zoomText]}>
               Zoom: {this.state.zoom}
             </Text>
-          )}
+          )} */}
 
-          {/* <TouchableOpacity
+        {/* <TouchableOpacity
               style={[styles.flipButton, { flex: 0.1, alignSelf: "flex-end" }]}
               onPress={this.zoomIn.bind(this)}
             >
@@ -340,27 +435,75 @@ export default class CameraScreen extends React.Component {
             >
               <Text style={styles.flipText}> - </Text>
             </TouchableOpacity> */}
-          <SmallButton
+        {/* <SmallButton
             style={styles.af}
             title={"AF:" + this.state.autoFocus}
             onPress={this.toggleFocus.bind(this)}
-          />
+          /> */}
+        <SmallButton
+          style={styles.snap}
+          onPress={this.takePicture.bind(this)}
+        />
+        {this.props.params.type == 2 ? (
           <SmallButton
-            style={styles.snap}
-            title="snap"
-            onPress={this.takePicture.bind(this)}
+            title={"PAGE " + this.state.page}
+            style={styles.page}
+            onPress={() => this.assignPageNumber()}
           />
-          <NavigationButton
-            style={{
-              position: "absolute",
-              bottom: 30,
-              right: 30,
-              zIndex: 40,
-            }}
-            direction="right"
-            onPress={() => this.props.navigation.navigate("Confirm")}
+        ) : (
+          <SmallButton
+            activeOpacity={1}
+            title={"PAGE " + this.state.page}
+            style={styles.page}
           />
-        </View>
+        )}
+        {this.state.pageNumberModal ? (
+          <Modal title={`Set page number`}>
+            <View style={styles.children}>
+              <ModalButton
+                onPress={() => this.setState({ page: this.state.page - 1 })}
+                line={3}
+                title={`-`}
+              />
+              <ModalButton line={3} title={this.state.page} />
+              <ModalButton
+                onPress={() => this.setState({ page: this.state.page + 1 })}
+                line={3}
+                title={`+`}
+              />
+            </View>
+            <View style={styles.children}>
+              <ModalButton
+                line={2}
+                title={"SAVE"}
+                color={colors.light}
+                onPress={() => this.setState({ pageNumberModal: false })}
+              />
+              <ModalButton
+                line={2}
+                title={"CANCEL"}
+                color={colors.light}
+                onPress={() => this.setState({ pageNumberModal: false })}
+              />
+            </View>
+          </Modal>
+        ) : null}
+        <NavigationButton
+          style={{
+            position: "absolute",
+            bottom: 30,
+            right: 30,
+            zIndex: 40,
+          }}
+          direction="right"
+          onPress={() => this.props.navigation.navigate("Confirm")}
+        />
+        <NavigationButton
+          style={styles.back}
+          onPress={() => this.props.navigation.goBack()}
+          label="Back"
+          direction="left"
+        />
       </RNCamera>
     );
   }
@@ -372,14 +515,22 @@ export default class CameraScreen extends React.Component {
         {this.state.cameraPreview ? (
           <CameraPreview
             resetPhoto={() =>
-              this.setState({ cameraPreview: false, fileUri: null })
+              this.setState({
+                cameraPreview: false,
+                fileUri: null,
+                pageNumberModal: false,
+              })
             }
             navigation={this.props.navigation}
             params={this.props.params}
-            page={this.props.page}
-            setPage={this.props.setPage}
+            page={this.state.page}
+            setPage={() => this.setState({ page: this.state.page + 1 })}
             item={this.state.item}
             fileUri={this.state.fileUri}
+            assignPageNumber={this.state.pageNumberModal}
+            setPageNumberModal={(bool) =>
+              this.setState({ pageNumberModal: bool })
+            }
           />
         ) : (
           this.renderCamera(item)
@@ -416,6 +567,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "white",
     opacity: 0.4,
+    zIndex: 100,
   },
   flipText: {
     color: "white",
@@ -441,16 +593,29 @@ const styles = StyleSheet.create({
     textAlign: "center",
     backgroundColor: "transparent",
   },
-  af: {
-    left: 30,
-  },
   snap: {
-    left: width / 2 - 15,
+    left: width / 2 - 25,
+    borderRadius: 25,
+    borderWidth: 5,
+    width: 50,
+    height: 50,
+    position: "absolute",
     bottom: 30,
+  },
+  page: {
+    position: "absolute",
+    bottom: 40,
+    left: width / 2 + 40,
+    zIndex: 50,
   },
   children: {
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
+  },
+  back: {
+    position: "absolute",
+    bottom: 30,
+    left: 30,
   },
 });

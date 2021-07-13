@@ -10,7 +10,7 @@ function ModalButton({title, onPress, line, color = colors.blue, style}) {
   return (
     <TouchableOpacity
       style={[
-        line == 2 ? {width: '48%'} : {width: '100%'}, {borderColor: color},
+        line == 3 ? {width: '28%'} : line == 2 ? {width: '48%'} : {width: '100%'}, {borderColor: color},
         styles.button,
         style,
       ]}
