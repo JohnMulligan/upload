@@ -102,7 +102,7 @@ const CameraPreview = ({
                 {
                   "type": "literal", 
                   "property_id": 108,
-                  "@value": "1"
+                  "@value": "${page}"
                 }
               ]
             }`
