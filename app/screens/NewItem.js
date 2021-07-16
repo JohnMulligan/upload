@@ -169,7 +169,7 @@ function NewItem({ navigation }) {
   return (
     <ItemScreen
       style={{ flex: 1 }}
-      exit={() => navigation.navigate("Quick Start")}
+      exit={() => navigation.goBack()}
     >
       <Header title="Create New Item" />
       <ScrollView bounces={false} style={styles.body}>

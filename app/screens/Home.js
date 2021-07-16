@@ -19,7 +19,7 @@ import * as SecureStore from "expo-secure-store";
 
 const { width, height } = Dimensions.get("window");
 
-function QuickStart({ navigation }) {
+function Home({ navigation }) {
   const { user, setUser } = useContext(AuthContext);
 
   function logOut() {
@@ -96,4 +96,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default QuickStart;
+export default Home;

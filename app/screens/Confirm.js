@@ -66,7 +66,7 @@ function Confirm({navigation}) {
   return (
     <ItemScreen
       style={{flex: 1}}
-      exit={() => navigation.navigate('Quick Start')}>
+      exit={() => navigation.navigate('Home')}>
       <Header title="Confirm" />
       <View style={styles.body}>
         <Text>Item Metadata</Text>
