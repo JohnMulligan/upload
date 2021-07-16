@@ -15,7 +15,7 @@ import { Formik } from "formik";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import Header from "../components/Header";
-import ItemScreen from "../components/ItemScreen";
+import Screen from "../components/Screen";
 import TextInput from "../components/TextInput";
 import Text from "../components/Text";
 import Icon from "../components/Icon";
@@ -167,12 +167,12 @@ function NewItem({ navigation }) {
   };
 
   return (
-    <ItemScreen
+    <Screen
       style={{ flex: 1 }}
       exit={() => navigation.navigate("Quick Start")}
+      header = "Create New Item"
     >
-      <Header title="Create New Item" />
-      <ScrollView bounces={false} style={styles.body}>
+      <ScrollView bounces={false} style={{width: '100%', backgroundColor: 'black'}}>
         <Formik initialValues={types} onSubmit={(values) => createItem(values)}>
           {({ handleBlur, handleSubmit, resetForm, values }) => (<>
             <View style = {{height: height-130}}>
@@ -237,7 +237,7 @@ function NewItem({ navigation }) {
           <View style={styles.shadow} />
         </>
       )}
-    </ItemScreen>
+    </Screen>
   );
 }
 

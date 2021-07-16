@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { createStackNavigator } from "@react-navigation/stack";
-import QuickStart from "../screens/QuickStart";
 import NewItem from "../screens/NewItem";
 import ChooseUploadType from "../screens/ChooseUploadType";
 

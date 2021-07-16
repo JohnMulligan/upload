@@ -25,7 +25,7 @@ function TInput({name, value, textColor = 'black', required, note, style, ...oth
 const styles = StyleSheet.create({
   container: {
     marginBottom: 5,
-    
+    width: '100%'
   },
   input: {
     marginBottom: 5,
