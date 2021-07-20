@@ -64,7 +64,7 @@ function ChooseUploadType({ navigation }) {
   return (
     <ItemScreen
       style={{ flex: 1 }}
-      exit={() => navigation.navigate("Quick Start")}
+      exit={() => navigation.navigate("Home")}
     >
       <View
         style={{

@@ -1,17 +1,14 @@
 import React, { useState } from "react";
-import { View, Image, Platform } from "react-native";
+import { View, Image, Text, Platform } from "react-native";
 import Button from "../components/Button";
-import Screen from "../components/Screen";
+import ItemScreen from "../components/ItemScreen";
 
 function AllItemView({ navigation }) {
 
   return (
-    <Screen
-      back={() => navigation.goBack()}
-      style={{ justifyContent: "center" }}
-    >
-     
-    </Screen>
+    <ItemScreen exit={() => navigation.goBack()} style={{ flex: 1, padding: 15, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Sorry, this feature isn't available yet.</Text>
+    </ItemScreen>
   );
 }
 

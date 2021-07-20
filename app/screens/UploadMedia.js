@@ -49,7 +49,7 @@ function UploadMedia({ navigation, route }) {
       <View style={styles.header}>
         <Header title="Camera" />
         <TouchableOpacity
-          onPress={() => navigation.navigate("Quick Start")}
+          onPress={() => navigation.navigate("Home")}
           style={styles.back}
         >
           <Image
