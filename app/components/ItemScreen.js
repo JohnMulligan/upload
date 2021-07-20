@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from "react";
 import {
   StyleSheet,
   SafeAreaView,
@@ -6,25 +6,26 @@ import {
   StatusBar,
   Image,
   TouchableOpacity,
-} from 'react-native';
+} from "react-native";
 
-import colors from '../config/colors';
+import colors from "../config/colors";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const ItemScreen = ({children, exit, style}) => {
+const ItemScreen = ({ children, exit, style }) => {
+  const insets = useSafeAreaInsets();
+
   return (
-    <SafeAreaView style={[styles.screen, style]}>
-      <View style={[styles.view, style]}>
-        {exit && (
-          <TouchableOpacity onPress={exit} style={styles.back}>
-            <Image
-              style={{width: 20, height: 20}}
-              source={require('../config/Icons/close.png')}
-            />
-          </TouchableOpacity>
-        )}
-        {children}
-      </View>
-    </SafeAreaView>
+    <View style={[styles.screen, style, {paddingTop: insets.top}]}>
+      {exit && (
+        <TouchableOpacity onPress={exit} style={styles.back}>
+          <Image
+            style={{ width: 20, height: 20 }}
+            source={require("../config/Icons/close.png")}
+          />
+        </TouchableOpacity>
+      )}
+      {children}
+    </View>
   );
 };
 const styles = StyleSheet.create({
@@ -32,15 +33,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.light,
   },
-  view: {
-    flex: 1,
-    paddingTop: StatusBar.currentHeight + 40,
-  },
   back: {
     marginTop: 30,
     width: 25,
     height: 25,
-    position: 'absolute',
+    position: "absolute",
     zIndex: 5,
     right: 20,
     top: 20,

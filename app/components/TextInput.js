@@ -5,14 +5,15 @@ import Text from './Text';
 import colors from '../config/colors';
 import defaultStyles from '../config/styles';
 
-function TInput({name, value, textColor = 'black', required, note, style, ...otherProps}) {
+function TInput({name, value, multiline, textColor = 'black', required, note, style, ...otherProps}) {
   return (
     <View style={styles.container, style}>
       <View style={{flexDirection: 'row'}}>
         {name && <Text style={{paddingBottom: 2, paddingLeft: 2}}>{name}</Text>}
         {required && <Text>*</Text>}
       </View>
-      <TextInput multiline = {true} value = {value} autocorrect = {false} style={[{color: textColor}, styles.input]} {...otherProps} />
+      <TextInput multiline = {multiline && true} value = {value} autocorrect = {false} style={[{color: textColor}, styles.input]} {...otherProps} />
+      
       {note && (
         <Text style={{fontSize: 12, color: colors.primary, padding: 2}}>
           {note}

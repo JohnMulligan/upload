@@ -167,53 +167,52 @@ function NewItem({ navigation }) {
   };
 
   return (
-    <ItemScreen
-      style={{ flex: 1 }}
-      exit={() => navigation.goBack()}
-    >
+    <ItemScreen style={{ flex: 1 }} exit={() => navigation.goBack()}>
       <Header title="Create New Item" />
       <ScrollView bounces={false} style={styles.body}>
         <Formik initialValues={types} onSubmit={(values) => createItem(values)}>
-          {({ handleBlur, handleSubmit, resetForm, values }) => (<>
-            <View style = {{height: height-130}}>
-              <Text style={{ paddingBottom: 2, paddingLeft: 2 }}>
-                Resource Templates
-              </Text>
-              <View style={styles.picker}>
-                <RNPickerSelect
-                  items={getItems()}
-                  onValueChange={(value, idx) => loadFields(value, idx)}
-                />
-              </View>
-              {templateSelected ? (
-                <>
-                  {titles.map((title, idx) => (
-                    <TextInput
-                      onChangeText={(value) =>
-                        handleChangeText(title, value, IDs[idx])
-                      }
-                      name={title}
-                      id={IDs[idx]}
-                      value={values[title + ""]}
-                      key={idx}
-                    />
-                  ))}
-                </>
-              ) : (
-                <View>
-                  <Text>Please select a Resource Template to get started.</Text>
+          {({ handleBlur, handleSubmit, resetForm, values }) => (
+            <>
+              <View style={{ height: height - 130 }}>
+                <Text style={{ paddingBottom: 2, paddingLeft: 2 }}>
+                  Resource Templates
+                </Text>
+                <View style={styles.picker}>
+                  <RNPickerSelect
+                    items={getItems()}
+                    onValueChange={(value, idx) => loadFields(value, idx)}
+                  />
                 </View>
-              )}
-
-              
-            </View>
-            <NavigationButton
+                {templateSelected ? (
+                  <>
+                    {titles.map((title, idx) => (
+                      <TextInput
+                        onChangeText={(value) =>
+                          handleChangeText(title, value, IDs[idx])
+                        }
+                        multiline={true}
+                        name={title}
+                        id={IDs[idx]}
+                        value={values[title + ""]}
+                        key={idx}
+                      />
+                    ))}
+                  </>
+                ) : (
+                  <View>
+                    <Text>
+                      Please select a Resource Template to get started.
+                    </Text>
+                  </View>
+                )}
+              </View>
+              <NavigationButton
                 style={styles.next}
                 onPress={handleSubmit}
                 label="Done"
                 direction="right"
               />
-              </>
+            </>
           )}
         </Formik>
       </ScrollView>
@@ -247,7 +246,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     padding: 25,
-    height: '100%',
+    height: "100%",
   },
   icon: {
     position: "absolute",

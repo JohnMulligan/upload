@@ -41,6 +41,7 @@ const CameraPreview = ({
   const [optionsModal, setOptionsModal] = useState(false);
   const [confirmButton, setConfirmButton] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadTracker, setUploadTracker] = useState(false);
   const [successresponse, setResponse] = useState(
     "You should see your response here"
   );
@@ -72,6 +73,7 @@ const CameraPreview = ({
     var uploadBegin = (response) => {
       var jobId = response.jobId;
       console.log("UPLOAD HAS BEGUN! JobId: " + jobId);
+      setUploadTracker(true);
     };
 
     var uploadProgress = (response) => {
@@ -105,7 +107,7 @@ const CameraPreview = ({
                   "@value": "${page}"
                 }
               ]
-            }`
+            }`,
           },
           begin: uploadBegin,
           progress: uploadProgress,
@@ -262,6 +264,12 @@ const CameraPreview = ({
             </View>
           </View>
         </>
+      )}
+
+      {uploadTracker && (
+        <Modal title={`Upload is ${uploadProgress}% done...`}>
+        
+        </Modal>
       )}
 
       <ImageBackground

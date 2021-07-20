@@ -2,15 +2,15 @@ import React, { useState, useContext } from "react";
 import {
   View,
   Image,
-  Button,
   Platform,
   Dimensions,
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
+import Button from "../components/Button";
 import Card from "../components/Card";
 import Text from "../components/Text";
-import Screen from "../components/Screen";
+import ItemScreen from "../components/ItemScreen";
 import Header from "../components/Header";
 import colors from "../config/colors";
 
@@ -28,71 +28,44 @@ function Home({ navigation }) {
       .catch((error) => console.log("error", error));
   }
 
-  function loadCamera() {
-    navigation.navigate("Create Item", {
-      screen: "Upload Media",
-      params: { type: 1, testItem: 337 },
-    });
-  }
-
   return (
-    <Screen style={{ flex: 1, alignItems: "center" }}>
-      <Card activeOpacity={1} title="Create New Item">
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate("Create Item", { screen: "Create New Item" })
-          }
-          style={[{ marginRight: "5%" }, styles.newitem]}
-        >
-          <Text style={styles.mediumtext} weight="medium">
-            Start from a Blank Template
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.newitem}>
-          <Text style={styles.mediumtext} weight="medium">
-            Copy Contents from an Existing Item
-          </Text>
-        </TouchableOpacity>
+    <ItemScreen style={{ flex: 1, alignItems: "center" }}>
+      <View style={styles.imageContainer}>
+        <Image
+          source={require("../config/Icons/SClogo.png")}
+          style={{ width: 150, resizeMode: "contain" }}
+        />
+        <Text style = {{textAlign: 'center'}}>welcome! what would you like to do today?</Text>
+      </View>
+      <Card onPress = {() => navigation.navigate("Create Item", { screen: "Create New Item" })} title="Create a new blank item">
+        <Text style = {{fontSize: 14, color: colors.grey}}>Choose from the list of resource templates to create a new item and upload image attachments</Text>
+      </Card>
+      <Card onPress = {() => navigation.navigate("Create Item", { screen: "Create New Item" })} title="Copy an existing item">
+        <Text style = {{fontSize: 14, color: colors.grey}}>Create a new item based on the fields of an existing item, and edit however you'd like.</Text>
       </Card>
       <Card
-        title="Find Item"
+        title="Find item/media"
         onPress={() => navigation.navigate("Find and Edit")}
-      ></Card>
+      >        
+        <Text style = {{fontSize: 14, color: colors.grey}}>Search for an item in Omeka S using provided search filters</Text>
+      </Card>
       <Card
-        title="Recently Added"
+        title="View all items"
         onPress={() => navigation.navigate("View All Items")}
       >
-        <TouchableOpacity onPress={() => loadCamera()}>
-          <Text>Load Camera</Text>
-        </TouchableOpacity>
+        <Text style = {{fontSize: 14, color: colors.grey}}>All currently uploaded items in the Omeka S database. Includes links to media.</Text>
       </Card>
-      <TouchableOpacity onPress={() => logOut()}>
-        <Text>Log out</Text>
-      </TouchableOpacity>
-    </Screen>
+      <Button onPress={() => logOut()} title = "LOGOUT" style = {{width: '60%'}}/>
+    </ItemScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    width: 0.8 * width,
-    backgroundColor: colors.light,
-    //height: .3*height,
-  },
-  newitem: {
-    borderWidth: 2,
-    width: "47.5%",
-    height: "100%",
-    borderColor: colors.primary,
+  imageContainer: {
     justifyContent: "center",
     alignItems: "center",
-    padding: 10,
-    borderRadius: 10,
-  },
-  mediumtext: {
-    fontSize: 18,
-    textAlign: "center",
-    color: colors.primary,
+    margin: 25,
+    width: 150
   },
 });
 
