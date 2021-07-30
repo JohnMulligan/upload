@@ -5,6 +5,7 @@
   black: "#000",
   white: "#fff",
   grey: "#838383",
+  shadow: "rgba(0, 0, 0, 0.4)",
   medium: "#6e6969",
   // light: "#f8f4f4",
   light: "#F7F5EC",

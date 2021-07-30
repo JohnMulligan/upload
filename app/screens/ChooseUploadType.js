@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
+  ScrollView,
   TextInput,
 } from "react-native";
 
@@ -38,7 +39,7 @@ function ChooseUploadType({ navigation }) {
   const { item, setItem } = useContext(ItemContext);
 
   const [selected, setSelected] = useState([false, true, false, false]);
-  const [singlePage, onChangeSinglePage] = useState(-1);
+  const [singlePage, onChangeSinglePage] = useState(1);
   const [assignPage, onChangeAssignPage] = useState(1);
 
   const next = () => {
@@ -59,13 +60,10 @@ function ChooseUploadType({ navigation }) {
   };
 
   const back = () => {
-    navigation.navigate("Create New Item");
+    navigation.navigate("Create New Item", { mode: "view" });
   };
   return (
-    <ItemScreen
-      style={{ flex: 1 }}
-      exit={() => navigation.navigate("Home")}
-    >
+    <ItemScreen style={{ flex: 1 }} exit={() => navigation.navigate("Home")}>
       <View
         style={{
           flexDirection: "row",
@@ -76,138 +74,116 @@ function ChooseUploadType({ navigation }) {
         <Header title="Choose Upload Type" />
       </View>
       <View style={styles.body}>
-        <Option
-          onPress={() => setSelected([true, false, false, false])}
-          selected={selected[0]}
-          text="I'm only uploading one file"
-          description="For quick, single image uploads. Take a picture or select from camera roll and upload directly to Omeka."
-        >
-          {selected[0] && (
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Text
-                weight="medium"
-                style={{ color: colors.grey, fontSize: 14 }}
-              >
-                Set page number (optional)
-              </Text>
-              <TextInput
-                autocorrect={false}
-                onChangeText={onChangeSinglePage}
+        <ScrollView style = {{flex: 1, height: height - 130}}>
+          <Option
+            onPress={() => setSelected([true, false, false, false])}
+            selected={selected[0]}
+            text="I'm only uploading one image"
+            description="For quick, single image uploads. Take a picture or select from camera roll and upload directly to Omeka."
+          >
+            {selected[0] && (
+              <View
                 style={{
-                  borderRadius: 7.5,
-                  borderWidth: 1,
-                  padding: 5,
-                  height: 30,
-                  width: 50,
-                  paddingHorizontal: 10,
-                  borderColor: colors.primary,
-                  fontFamily: "Barlow_400Regular",
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
                 }}
-              />
-            </View>
-          )}
-        </Option>
-
-        <View style={styles.divider} />
-        <Option
-          onPress={() => setSelected([false, true, false, false])}
-          selected={selected[1]}
-          text="Auto-increment page uploads"
-          description="Counts the number of pages for you, starting at no. 1. Can’t edit page number while uploading."
-        />
-        <Option
-          onPress={() => setSelected([false, false, true, false])}
-          selected={selected[2]}
-          text="Assign page numbers as you go"
-          description="Give each image an assigned page number. Automatically starts at 1 and defaults to the next number"
-        >
-          {selected[2] && (
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                width: "100%",
-              }}
-            >
-              <View style={{ width: "80%" }}>
+              >
                 <Text
                   weight="medium"
-                  style={{ color: colors.grey, fontSize: 14, flexWrap: 'wrap' }}
+                  style={{ color: colors.grey, fontSize: 14 }}
                 >
-                  Set starting page number (optional)
+                  Set page number (optional)
                 </Text>
+                <TextInput
+                  autocorrect={false}
+                  onChangeText={onChangeSinglePage}
+                  style={{
+                    borderRadius: 7.5,
+                    borderWidth: 1,
+                    padding: 5,
+                    height: 30,
+                    width: 50,
+                    paddingHorizontal: 10,
+                    borderColor: colors.primary,
+                    fontFamily: "Barlow_400Regular",
+                  }}
+                />
               </View>
-              <TextInput
-                autocorrect={false}
-                onChangeText={onChangeAssignPage}
-                style={{
-                  borderRadius: 7.5,
-                  borderWidth: 1,
-                  padding: 5,
-                  height: 30,
-                  width: '20%',
-                  paddingHorizontal: 10,
-                  borderColor: colors.primary,
-                  fontFamily: "Barlow_400Regular",
-                }}
-              />
-            </View>
-          )}
-        </Option>
-        <View style={styles.divider} />
+            )}
+          </Option>
 
-        <Option
-          onPress={() => setSelected([false, false, false, true])}
-          selected={selected[3]}
-          text="I don't want to upload any media"
-          description="Finish item now. You can go back and upload more media later."
-        />
+          <View style={styles.divider} />
+          <Option
+            onPress={() => setSelected([false, true, false, false])}
+            selected={selected[1]}
+            text="Auto-increment page uploads"
+            description="Counts the number of pages for you, starting at no. 1. Can’t edit page number while uploading."
+          />
+          <Option
+            onPress={() => setSelected([false, false, true, false])}
+            selected={selected[2]}
+            text="Manually assign page numbers"
+            description="Give each image an assigned page number. Automatically starts at 1 and defaults to the next number"
+          >
+            {selected[2] && (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  width: "100%",
+                }}
+              >
+                <View style={{ width: "80%" }}>
+                  <Text
+                    weight="medium"
+                    style={{
+                      color: colors.grey,
+                      fontSize: 14,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    Set starting page number (optional)
+                  </Text>
+                </View>
+                <TextInput
+                  autocorrect={false}
+                  onChangeText={onChangeAssignPage}
+                  style={{
+                    borderRadius: 7.5,
+                    borderWidth: 1,
+                    padding: 5,
+                    height: 30,
+                    width: "20%",
+                    paddingHorizontal: 10,
+                    borderColor: colors.primary,
+                    fontFamily: "Barlow_400Regular",
+                  }}
+                />
+              </View>
+            )}
+          </Option>
+          <View style={styles.divider} />
+          <Option
+            onPress={() => setSelected([false, false, false, true])}
+            selected={selected[3]}
+            text="I don't want to upload any media"
+            description="Finish item now. You can go back and upload more media later."
+          />
+        </ScrollView>
       </View>
-      {/* {modal && (
-        <>
-          <Modal title="New item successfully created!">
-            <View style={styles.children}>
-              <ModalButton
-                onPress={() => uploadMedia()}
-                line={2}
-                title="UPLOAD MEDIA"
-              />
-              <ModalButton
-                onPress={() => navigation.navigate("Quick Start")}
-                color={colors.light}
-                line={2}
-                title="EXIT"
-              />
-            </View>
-          </Modal>
-          <View style={styles.shadow} />
-        </>
-      )} */}
+      <NavigationButton
+        style={styles.next}
+        onPress={() => next()}
+        label="Next"
+        direction="right"
+      />
       <NavigationButton
         style={styles.back}
         onPress={() => back()}
         label="Back"
         direction="left"
-      />
-      <View style={styles.info}>
-        <Text
-          style={{ textAlign: "center", paddingBottom: 10, paddingRight: 25 }}
-        >
-          This will upload images under the item {item[0]}
-        </Text>
-      </View>
-      <NavigationButton
-        style={styles.next}
-        onPress={() => next()}
-        label="Done"
-        direction="right"
       />
     </ItemScreen>
   );
@@ -250,9 +226,9 @@ const styles = StyleSheet.create({
   info: {
     position: "absolute",
     bottom: 30,
-    width: width / 2,
-    minHeight: 50,
-    left: width / 4,
+    width: width - 125,
+    height: 50,
+    left: 30,
   },
   back: {
     position: "absolute",

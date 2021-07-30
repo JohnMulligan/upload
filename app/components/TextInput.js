@@ -12,7 +12,7 @@ function TInput({name, value, multiline, textColor = 'black', required, note, st
         {name && <Text style={{paddingBottom: 2, paddingLeft: 2}}>{name}</Text>}
         {required && <Text>*</Text>}
       </View>
-      <TextInput multiline = {multiline && true} value = {value} autocorrect = {false} style={[{color: textColor}, styles.input]} {...otherProps} />
+      <TextInput value = {value} autocorrect = {false} style={[{color: textColor}, styles.input]} {...otherProps} />
       
       {note && (
         <Text style={{fontSize: 12, color: colors.primary, padding: 2}}>

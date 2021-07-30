@@ -20,34 +20,98 @@ import Button from "../components/Button";
 
 import colors from "../config/colors";
 
-import { fetchResourceTemplates } from "../../api/utils/Omeka";
+import { fetchItemData } from "../../api/utils/Omeka";
 import * as axios from "axios";
 import AuthContext from "../../api/auth/context";
 import ItemContext from "../../api/auth/itemContext";
 import * as SecureStore from "expo-secure-store";
 
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 const { width, height } = Dimensions.get("window");
 
-function Confirm({ navigation }) {
+function Confirm({ navigation, route }) {
   const { user, setUser } = useContext(AuthContext);
   const { item, setItem } = useContext(ItemContext);
+  const [itemData, setItemData] = useState({});
+  const [loading, setLoading] = useState(true);
+  const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    SecureStore.getItemAsync("host").then((host) => {
+      SecureStore.getItemAsync("keys").then((keys) => {
+        fetchItemData(
+          host,
+          "items",
+          route.params.item_id ? route.params.item_id : item[0],
+          {
+            key_identity: keys.split(",")[0],
+            key_credential: keys.split(",")[1],
+          }
+        )
+          .then((res) => {
+            if (loading == true) {
+              setItemData(res);
+              setLoading(false);
+            }
+          })
+          .catch((error) => console.log("error", error));
+      });
+    });
+  });
 
   return (
     <ItemScreen style={{ flex: 1 }} exit={() => navigation.navigate("Home")}>
-      <Header title="Review Changes" />
-      <View style={styles.body}>
-        <Text weight="medium" style={{ fontSize: 18 }}>
-          Item Metadata
-        </Text>
-        <Text>{item}</Text>
-        <Button onPress={() => navigation.navigate("Home")} title="FINISH" />
-      </View>
-      <NavigationButton
-        onPress={() => navigation.goBack()}
-        label="Back"
-        direction="left"
-        style={styles.back}
-      />
+      {!loading && (
+        <>
+          <Header title="Review Changes" />
+          <View style={styles.body}>
+            <Text weight="medium" style={{ fontSize: 24 }}>
+              {itemData[0][1]} {itemData[1][1]}
+            </Text>
+            <View>
+              {itemData.map(
+                (prop, idx) =>
+                  idx > 1 && (
+                    <>
+                      <View style={styles.prop} key={idx}>
+                        <Text style={{ fontSize: 18 }} weight="medium">
+                          {prop[0]}
+                        </Text>
+                        <Text>{prop[1]}</Text>
+                      </View>
+                      <View
+                        style={{
+                          height: 1,
+                          backgroundColor: colors.grey,
+                          width: "100%",
+                        }}
+                      />
+                    </>
+                  )
+              )}
+            </View>
+            <View>
+              <Text style={{ fontSize: 24, marginTop: 20 }} weight={"medium"}>
+                Media
+              </Text>
+            </View>
+          </View>
+
+          <Button
+            style={[styles.done, { bottom: insets.bottom }]}
+            onPress={() => navigation.navigate("Home")}
+            title="DONE"
+          />
+
+          <NavigationButton
+            onPress={() => navigation.goBack()}
+            label="Back"
+            direction="left"
+            style={[styles.back, { bottom: insets.bottom }]}
+          />
+        </>
+      )}
     </ItemScreen>
   );
 }
@@ -60,29 +124,19 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 30,
     padding: 25,
   },
-  children: {
+  prop: {
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "100%",
-  },
-  shadow: {
-    position: "absolute",
-    top: 0,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    width: width,
-    height: height,
-    backgroundColor: colors.gray,
-  },
-  next: {
-    position: "absolute",
-    bottom: 30,
-    right: 30,
+    marginVertical: 10,
   },
   back: {
     position: "absolute",
-    bottom: 30,
     left: 30,
+  },
+  done: {
+    position: "absolute",
+    width: width / 2 - 30,
+    left: width / 4 + 15,
   },
 });
 export default Confirm;

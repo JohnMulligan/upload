@@ -29,6 +29,9 @@ import AuthContext from "../../api/auth/context";
 import ItemContext from "../../api/auth/itemContext";
 import * as SecureStore from "expo-secure-store";
 
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+
 import {
   fetchOne,
   fetchResourceTemplates,
@@ -39,14 +42,15 @@ import {
 
 const { width, height } = Dimensions.get("window");
 
-function NewItem({ navigation }) {
+function NewItem({ navigation, route }) {
   const { user, setUser } = useContext(AuthContext);
   const { item, setItem } = useContext(ItemContext);
   const [host, setHost] = useState("");
 
+  const [screenHeight, setScreenHeight] = useState(height);
   const [length, setLength] = useState(2);
   const [resourceTemplates, setResourceTemplates] = useState([]);
-  const [templateId, setTemplateId] = useState([]);
+  const [templateId, setTemplateId] = useState(0);
   const [options, setOptions] = useState([]);
   const [templateSelected, setTemplateSelected] = useState("");
   const [modal, setModal] = useState(false);
@@ -55,6 +59,8 @@ function NewItem({ navigation }) {
   const [IDs, setIDs] = useState([]);
   const [types, setTypes] = useState({});
   const [values, setValues] = useState({});
+
+  const insets = useSafeAreaInsets();
 
   //make authentication pathway here for keys
   useEffect(() => {
@@ -76,28 +82,29 @@ function NewItem({ navigation }) {
     console.log(value, idx);
     setValues({});
     setTemplateSelected(value);
-    setTemplateId(idx);
+    const itemSelected = getItems().filter((item) => item.label == value);
+    if (itemSelected.length > 0) setTemplateId(itemSelected[0].id);
     //voids "Select an item"
     if (idx != 0) {
       setTitles(
-        await getPropertiesInResourceTemplate(host, idx).then((res) =>
-          res.map((prop, idx) => prop.data["o:label"])
+        await getPropertiesInResourceTemplate(host, itemSelected[0].id).then(
+          (res) => res.map((prop) => prop.data["o:label"])
         )
       );
       setTypes(
-        await getPropertiesInResourceTemplate(host, idx).then((res) =>
-          res.map((prop, idx) => prop.data)
+        await getPropertiesInResourceTemplate(host, itemSelected[0].id).then(
+          (res) => res.map((prop) => prop.data)
         )
       );
-      await getPropertiesInResourceTemplate(host, idx).then((res) =>
-        res.map((type) => (values[type] = ""))
+      await getPropertiesInResourceTemplate(host, itemSelected[0].id).then(
+        (res) => res.map((type) => (values[type] = ""))
       );
-      setIDs(await getPropertyIds(host, idx).then((res) => res));
+      setIDs(await getPropertyIds(host, itemSelected[0].id).then((res) => res));
     }
   };
 
   const next = () => {
-    setModal(true);
+    navigation.navigate("Create Item", { screen: "Choose Upload Type" });
   };
 
   const uploadMedia = () => {
@@ -112,6 +119,7 @@ function NewItem({ navigation }) {
         label: item["o:label"],
         value: item["o:label"],
         class: item["o:resource_class"]["o:id"],
+        id: item["o:id"],
       })
     );
     return templates;
@@ -128,6 +136,7 @@ function NewItem({ navigation }) {
         property_id: id,
         property_label: titles[idx],
         "@value": values[titles[idx]],
+        is_public: false
       },
     ]);
     IDs.map((id, idx) => (payload[types[idx]["o:term"]] = v[idx]));
@@ -139,6 +148,7 @@ function NewItem({ navigation }) {
     payload["o:resource_class"] = {
       "o:id": templates.class,
     };
+    payload["o:is_public"] = false
     //make authentication pathway here for keys
     SecureStore.getItemAsync("keys")
       .then((res) =>
@@ -169,11 +179,12 @@ function NewItem({ navigation }) {
   return (
     <ItemScreen style={{ flex: 1 }} exit={() => navigation.goBack()}>
       <Header title="Create New Item" />
-      <ScrollView bounces={false} style={styles.body}>
+      <View style={styles.body}>
         <Formik initialValues={types} onSubmit={(values) => createItem(values)}>
           {({ handleBlur, handleSubmit, resetForm, values }) => (
             <>
-              <View style={{ height: height - 130 }}>
+              <KeyboardAwareScrollView style={{ flex: 1, height: height - 130 }}>
+              <View>
                 <Text style={{ paddingBottom: 2, paddingLeft: 2 }}>
                   Resource Templates
                 </Text>
@@ -190,13 +201,22 @@ function NewItem({ navigation }) {
                         onChangeText={(value) =>
                           handleChangeText(title, value, IDs[idx])
                         }
-                        multiline={true}
+                        multiline={false}
                         name={title}
                         id={IDs[idx]}
                         value={values[title + ""]}
                         key={idx}
                       />
                     ))}
+                    <View
+                      style={{
+                        alignItems: "center",
+                        marginTop: 10,
+                        marginBottom: 50,
+                      }}
+                    >
+                      <Button onPress={handleSubmit} title="CREATE" />
+                    </View>
                   </>
                 ) : (
                   <View>
@@ -205,17 +225,12 @@ function NewItem({ navigation }) {
                     </Text>
                   </View>
                 )}
-              </View>
-              <NavigationButton
-                style={styles.next}
-                onPress={handleSubmit}
-                label="Done"
-                direction="right"
-              />
+                </View>
+              </KeyboardAwareScrollView>
             </>
           )}
         </Formik>
-      </ScrollView>
+      </View>
       {modal && (
         <>
           <Modal title="New item successfully created!">
@@ -236,6 +251,28 @@ function NewItem({ navigation }) {
           <View style={styles.shadow} />
         </>
       )}
+      {route.params && route.params.mode && route.params.mode == "view" && (
+        <>
+          <NavigationButton
+            style={[
+              styles.next,
+              {
+                position: "absolute",
+                bottom: insets.bottom,
+                right: 30,
+                zIndex: 10,
+              },
+            ]}
+            onPress={() => next()}
+            direction="right"
+          />
+          <View style={styles.shadow}>
+            <Text style={{ color: colors.light, textAlign: "center" }}>
+              Editing is disabled as this item has already been created
+            </Text>
+          </View>
+        </>
+      )}
     </ItemScreen>
   );
 }
@@ -246,7 +283,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     padding: 25,
-    height: "100%",
+    flex: 1,
   },
   icon: {
     position: "absolute",
@@ -274,13 +311,14 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 30,
     width: width,
     height: height,
-    backgroundColor: colors.gray,
-    zIndex: 5,
+    backgroundColor: colors.shadow,
+    zIndex: 9,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: "15%",
   },
   next: {
     position: "absolute",
-    bottom: 30,
-    right: 5,
   },
 });
 export default NewItem;

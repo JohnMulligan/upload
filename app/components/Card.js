@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
     borderColor: colors.blue,
     borderWidth: 2,
     width: 0.9 * width,
-    marginBottom: 0.025*height
+    marginBottom: 0.025*height,
   },
   children: {
     alignItems: 'center',

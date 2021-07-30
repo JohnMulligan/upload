@@ -23,8 +23,9 @@ import colors from "../config/colors";
 import AuthContext from "../../api/auth/context";
 import ItemContext from "../../api/auth/itemContext";
 import * as SecureStore from "expo-secure-store";
-import * as Crypto from "expo-crypto";
 import RNFS from "react-native-fs";
+
+// import {spawnThread} from 'react-native-multithreading';
 
 const { width, height } = Dimensions.get("window");
 
@@ -40,11 +41,8 @@ const CameraPreview = ({
 }: any) => {
   const [optionsModal, setOptionsModal] = useState(false);
   const [confirmButton, setConfirmButton] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadTracker, setUploadTracker] = useState(false);
-  const [successresponse, setResponse] = useState(
-    "You should see your response here"
-  );
+  const [uploadPercentage, setUploadPercentage] = useState([]);
+  // const [uploadTracker, setUploadTracker] = useState(false);
   const [pageNumberModal, setPageNumberModal] = useState(false);
 
   next = function () {
@@ -58,29 +56,18 @@ const CameraPreview = ({
     }
   };
 
-  keepPicture = async function (item, fileUri) {
-    if (!item) item = params.testItem;
-    var files = [
-      {
-        name: "file[0]",
-        filename: fileUri.split("/")[fileUri.split("/").length - 1],
-        filepath:
-          Platform.OS === "ios" ? fileUri.replace("file://", "") : fileUri,
-        filetype: "image/jpeg",
-      },
-    ];
-
-    var uploadBegin = (response) => {
+  const uploadImage = (item, fileUri, files) => {
+    const uploadBegin = (response) => {
       var jobId = response.jobId;
       console.log("UPLOAD HAS BEGUN! JobId: " + jobId);
-      setUploadTracker(true);
+      // setUploadTracker(true);
     };
 
-    var uploadProgress = (response) => {
+    const uploadProgress = (response) => {
       var percentage = Math.floor(
         (response.totalBytesSent / response.totalBytesExpectedToSend) * 100
       );
-      setUploadProgress(percentage);
+      setUploadPercentage(percentage);
       console.log("UPLOAD IS " + percentage + "% DONE!");
     };
 
@@ -128,6 +115,21 @@ const CameraPreview = ({
         });
       });
     });
+  };
+
+  keepPicture = async function (item, fileUri) {
+    if (!item) item = params.testItem;
+    var files = [
+      {
+        name: "file[0]",
+        filename: fileUri.split("/")[fileUri.split("/").length - 1],
+        filepath:
+          Platform.OS === "ios" ? fileUri.replace("file://", "") : fileUri,
+        filetype: "image/jpeg",
+      },
+    ];
+
+    uploadImage(item, fileUri, files);
   };
 
   const uploadSamePageMedia = () => {
@@ -266,11 +268,9 @@ const CameraPreview = ({
         </>
       )}
 
-      {uploadTracker && (
-        <Modal title={`Upload is ${uploadProgress}% done...`}>
-        
-        </Modal>
-      )}
+      {/* {uploadTracker && (
+        <Modal title={`Upload is ${uploadProgress}% done...`}></Modal>
+      )} */}
 
       <ImageBackground
         source={{ uri: fileUri }}

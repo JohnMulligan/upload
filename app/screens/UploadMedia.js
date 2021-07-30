@@ -27,7 +27,6 @@ const { width, height } = Dimensions.get("window");
 function UploadMedia({ navigation, route }) {
   const [cameraOn, setCameraOn] = useState(true);
   const [nextModal, setNextModal] = useState(false);
-  const [modal, setModal] = useState(false);
 
   const { item, setItem } = useContext(ItemContext);
   const { user, setUser } = useContext(AuthContext);

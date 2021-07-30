@@ -15,7 +15,7 @@ function AppNavigator() {
     <Stack.Navigator headerMode="none" mode="modal">
       <Stack.Screen name="Home" component={Home} />
       <Stack.Screen name="Create Item" component={CreateItemNavigator} />
-      <Stack.Screen name="Find and Edit" component={FindAndEdit} />
+      <Stack.Screen name="Edit Item" component={FindAndEdit} />
       <Stack.Screen name="View All Items" component={AllItemView} />
     </Stack.Navigator>
   );

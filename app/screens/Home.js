@@ -33,29 +33,69 @@ function Home({ navigation }) {
       <View style={styles.imageContainer}>
         <Image
           source={require("../config/Icons/SClogo.png")}
-          style={{ width: 150, resizeMode: "contain" }}
+          style={{
+            resizeMode: "contain",
+            height: 0.15 * height,
+          }}
         />
-        <Text style = {{textAlign: 'center'}}>welcome! what would you like to do today?</Text>
+        <Text style={{ textAlign: "center" }}>
+          welcome! what would you like to do today?
+        </Text>
       </View>
-      <Card onPress = {() => navigation.navigate("Create Item", { screen: "Create New Item" })} title="Create a new blank item">
-        <Text style = {{fontSize: 14, color: colors.grey}}>Choose from the list of resource templates to create a new item and upload image attachments</Text>
-      </Card>
-      <Card onPress = {() => navigation.navigate("Create Item", { screen: "Create New Item" })} title="Copy an existing item">
-        <Text style = {{fontSize: 14, color: colors.grey}}>Create a new item based on the fields of an existing item, and edit however you'd like.</Text>
+      <Card
+        style={{ maxHeight: 0.2 * height, overflow: "scroll" }}
+        onPress={() =>
+          navigation.navigate("Create Item", { screen: "Create New Item" })
+        }
+        title="Create a new item"
+      >
+        <Text style={{ fontSize: 14, color: colors.grey }}>
+          Choose from the list of resource templates to create a new item and
+          upload image attachments
+        </Text>
       </Card>
       <Card
+        style={{ maxHeight: 0.2 * height, overflow: "scroll" }}
+        onPress={() =>
+          navigation.navigate("Create Item", { screen: "Create New Item" })
+        }
+        title="Copy an existing item"
+      >
+        <Text style={{ fontSize: 14, color: colors.grey }}>
+          Create a new item based on the fields of an existing item, and edit
+          however you'd like.
+        </Text>
+      </Card>
+      {/* <Card
         title="Find item/media"
         onPress={() => navigation.navigate("Find and Edit")}
       >        
         <Text style = {{fontSize: 14, color: colors.grey}}>Search for an item in Omeka S using provided search filters</Text>
-      </Card>
+      </Card> */}
       <Card
-        title="View all items"
+        style={{ maxHeight: 0.1 * height, overflow: "scroll" }}
+        title="View and edit existing items"
         onPress={() => navigation.navigate("View All Items")}
       >
-        <Text style = {{fontSize: 14, color: colors.grey}}>All currently uploaded items in the Omeka S database. Includes links to media.</Text>
+        <Text style={{ fontSize: 14, color: colors.grey }}>
+          All currently uploaded items in the Omeka S database. Includes links
+          to media.
+        </Text>
       </Card>
-      <Button onPress={() => logOut()} title = "LOGOUT" style = {{width: '60%'}}/>
+      <Button
+        // onPress={() => logOut()}
+        // title="LOGOUT"
+        title="Review"
+        onPress={() =>
+          navigation.navigate("Create Item", {
+            screen: "Confirm",
+            params: {
+              item_id: "541",
+            },
+          })
+        }
+        style={{ width: "60%" }}
+      />
     </ItemScreen>
   );
 }
@@ -64,8 +104,9 @@ const styles = StyleSheet.create({
   imageContainer: {
     justifyContent: "center",
     alignItems: "center",
-    margin: 25,
-    width: 150
+    margin: 0.02 * height,
+    width: 200,
+    height: 0.2 * height,
   },
 });
 
