@@ -1,13 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { View, Image, Text, Platform } from "react-native";
+import { View, Image, Text, Platform, ScrollView } from "react-native";
 import Button from "../components/Button";
 import ItemCard from "../components/ItemCard";
 import ItemScreen from "../components/ItemScreen";
+import Header from "../components/Header";
+
+import { fetchItemData } from "../../api/utils/Omeka";
 
 import { fetch, getPropertiesInResourceTemplate } from "../../api/utils/Omeka";
 
 function AllItemView({ navigation }) {
   const [items, setItems] = useState([]);
+  const [search, setSearch] = useState("");
+
+  const filterMatches = item => {
+    console.log(item)
+  }
 
   useEffect(() => {
     fetch(
@@ -21,12 +29,15 @@ function AllItemView({ navigation }) {
     )
       .then((res) => {
         setItems(
-          res.map((item) => (
+          res.map((item, idx) => (
             <ItemCard
+              key={idx}
               title={item["o:title"]}
-              id={item["o:resource_template"]["o:id"]}
+              id={item["o:id"]}
               data={item}
-              onPress = {() => navigation.navigate("Edit Item", {item: item["o:title"]})}
+              onPress={() =>
+                navigation.navigate("Edit Item", { item: item })
+              }
               baseAddress="158.101.99.206"
             />
           ))
@@ -34,6 +45,16 @@ function AllItemView({ navigation }) {
       })
       .catch((error) => console.log("error", error));
   });
+
+  useEffect(() => {
+    if (search) {
+      let filtered = items.filter(filterMatches);
+      setItems(filtered);
+    } else {
+      setItems(items);
+    }
+  }, [search])
+
 
   return (
     <ItemScreen
@@ -45,7 +66,10 @@ function AllItemView({ navigation }) {
         alignItems: "center",
       }}
     >
-      {items}
+      <View style = {{width: '100%'}}>
+        <Header style = {{paddingLeft: 10}} title="Find and Edit" />
+      </View>
+      <ScrollView style={{ flex: 1 }}>{items}</ScrollView>
     </ItemScreen>
   );
 }

@@ -10,12 +10,15 @@ function Header({ title, body, style, ...otherProps }) {
   return (
     <Text
       weight="medium"
-      style={{
-        fontSize: 28,
-        paddingLeft: 25,
-        paddingTop: 25,
-        paddingBottom: 10,
-      }}
+      style={[
+        {
+          fontSize: 28,
+          paddingLeft: 25,
+          paddingTop: 25,
+          paddingBottom: 10,
+        },
+        style,
+      ]}
     >
       {title}
     </Text>

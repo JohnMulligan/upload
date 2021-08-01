@@ -30,7 +30,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width, height } = Dimensions.get("window");
 
-function Confirm({ navigation, route }) {
+function Confirm({ navigation }) {
   const { user, setUser } = useContext(AuthContext);
   const { item, setItem } = useContext(ItemContext);
   const [itemData, setItemData] = useState({});
@@ -40,15 +40,10 @@ function Confirm({ navigation, route }) {
   useEffect(() => {
     SecureStore.getItemAsync("host").then((host) => {
       SecureStore.getItemAsync("keys").then((keys) => {
-        fetchItemData(
-          host,
-          "items",
-          route.params.item_id ? route.params.item_id : item[0],
-          {
-            key_identity: keys.split(",")[0],
-            key_credential: keys.split(",")[1],
-          }
-        )
+        fetchItemData(host, "items", item[0], {
+          key_identity: keys.split(",")[0],
+          key_credential: keys.split(",")[1],
+        })
           .then((res) => {
             if (loading == true) {
               setItemData(res);
@@ -62,10 +57,11 @@ function Confirm({ navigation, route }) {
 
   return (
     <ItemScreen style={{ flex: 1 }} exit={() => navigation.navigate("Home")}>
-      {!loading && (
-        <>
-          <Header title="Review Changes" />
-          <View style={styles.body}>
+      <Header title="Review Changes" />
+
+      <View style={styles.body}>
+        {!loading && (
+          <>
             <Text weight="medium" style={{ fontSize: 24 }}>
               {itemData[0][1]} {itemData[1][1]}
             </Text>
@@ -96,22 +92,21 @@ function Confirm({ navigation, route }) {
                 Media
               </Text>
             </View>
-          </View>
+          </>
+        )}
+      </View>
+      <Button
+        style={[styles.done, { bottom: insets.bottom }]}
+        onPress={() => navigation.navigate("Home")}
+        title="DONE"
+      />
 
-          <Button
-            style={[styles.done, { bottom: insets.bottom }]}
-            onPress={() => navigation.navigate("Home")}
-            title="DONE"
-          />
-
-          <NavigationButton
-            onPress={() => navigation.goBack()}
-            label="Back"
-            direction="left"
-            style={[styles.back, { bottom: insets.bottom }]}
-          />
-        </>
-      )}
+      <NavigationButton
+        onPress={() => navigation.goBack()}
+        label="Back"
+        direction="left"
+        style={[styles.back, { bottom: insets.bottom }]}
+      />
     </ItemScreen>
   );
 }

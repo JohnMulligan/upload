@@ -83,17 +83,8 @@ function Home({ navigation }) {
         </Text>
       </Card>
       <Button
-        // onPress={() => logOut()}
-        // title="LOGOUT"
-        title="Review"
-        onPress={() =>
-          navigation.navigate("Create Item", {
-            screen: "Confirm",
-            params: {
-              item_id: "541",
-            },
-          })
-        }
+        onPress={() => logOut()}
+        title="LOGOUT"
         style={{ width: "60%" }}
       />
     </ItemScreen>

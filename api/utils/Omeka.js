@@ -71,7 +71,6 @@ export const fetchItemData = async (
   }
   //returns data in a format where title and id are retrieved from user input
   //and properties are in the format of property title as key and value/property id as an array
-  console.log(data)
   return data;
 };
 

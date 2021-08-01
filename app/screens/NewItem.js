@@ -241,7 +241,7 @@ function NewItem({ navigation, route }) {
                 title="UPLOAD MEDIA"
               />
               <ModalButton
-                onPress={() => navigation.navigate("Quick Start")}
+                onPress={() => navigation.navigate("Home")}
                 color={colors.light}
                 line={2}
                 title="EXIT"
