@@ -8,6 +8,7 @@ import Header from "../components/Header";
 import { fetchItemData, getThumbnail } from "../../api/utils/Omeka";
 
 import { fetch, getPropertiesInResourceTemplate } from "../../api/utils/Omeka";
+import * as SecureStore from "expo-secure-store";
 
 function AllItemView({ navigation }) {
   const [items, setItems] = useState([]);
@@ -19,35 +20,37 @@ function AllItemView({ navigation }) {
 
   useEffect(() => {
     SecureStore.getItemAsync("host").then((host) => {
-      fetch(
-        (baseAddress = host),
-        (endpoint = "items"),
-        (sortBy = "id"),
-        (params = {
-          key_identity: "OICzKK7enYzPejBUNe4n3OJXclbkdxl7",
-          key_credential: "JVulf5Tg6kjM4ozB9LQ61aOVeQ9hjtPf",
-        })
-      )
-        .then((res) => {
-          setItems(
-            res.map((item, idx) => (
-              <ItemCard
-                key={idx}
-                title={item["o:title"]}
-                id={item["o:id"]}
-                data={item}
-                onPress={() =>
-                  // navigation.navigate("Create Item", {
-                  //   screen: "Create New Item",
-                  //   params: { item: item["o:id"] },
-                  // })
-                  navigation.navigate("Edit Item", { item: item })
-                }
-              />
-            ))
-          );
-        })
-        .catch((error) => console.log("error", error));
+      SecureStore.getItemAsync("keys").then((keys) => {
+        fetch(
+          (baseAddress = host),
+          (endpoint = "items"),
+          (sortBy = "id"),
+          (params = {
+            key_identity: keys.split(",")[0],
+            key_credential: keys.split(",")[1],
+          })
+        )
+          .then((res) => {
+            setItems(
+              res.map((item, idx) => (
+                <ItemCard
+                  key={idx}
+                  title={item["o:title"]}
+                  id={item["o:id"]}
+                  data={item}
+                  onPress={() =>
+                    // navigation.navigate("Create Item", {
+                    //   screen: "Create New Item",
+                    //   params: { item: item["o:id"] },
+                    // })
+                    navigation.navigate("Edit Item", { item: item })
+                  }
+                />
+              ))
+            );
+          })
+          .catch((error) => console.log("error", error));
+      });
     });
   });
 
