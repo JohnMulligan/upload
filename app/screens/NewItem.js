@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import RNPickerSelect from "react-native-picker-select";
 import * as axios from "axios";
-import { Formik } from "formik";
+import { Formik, useFormikContext } from "formik";
 
 import Button from "../components/Button";
 import Card from "../components/Card";
@@ -22,6 +22,7 @@ import Icon from "../components/Icon";
 import Modal from "../components/Modal";
 import ModalButton from "../components/ModalButton";
 import NavigationButton from "../components/NavigationButton";
+import ErrorMessage from "../components/ErrorMessage";
 
 import colors from "../config/colors";
 
@@ -30,7 +31,7 @@ import ItemContext from "../../api/auth/itemContext";
 import * as SecureStore from "expo-secure-store";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 import {
   fetchOne,
@@ -38,6 +39,7 @@ import {
   fetchProperties,
   getPropertiesInResourceTemplate,
   getPropertyIds,
+  patchItem,
 } from "../../api/utils/Omeka";
 
 const { width, height } = Dimensions.get("window");
@@ -59,9 +61,14 @@ function NewItem({ navigation, route }) {
   const [IDs, setIDs] = useState([]);
   const [types, setTypes] = useState({});
   const [values, setValues] = useState({});
-
+  const [error, setError] = useState(false);
   const insets = useSafeAreaInsets();
 
+  useEffect(() => {
+    if (route.params && route.params.item) {
+      setItem(route.params.item["o:id"]);
+    }
+  });
   //make authentication pathway here for keys
   useEffect(() => {
     let isMounted = true;
@@ -79,7 +86,7 @@ function NewItem({ navigation, route }) {
   }, []);
 
   const loadFields = async (value, idx) => {
-    console.log(value, idx);
+    setError(false);
     setValues({});
     setTemplateSelected(value);
     const itemSelected = getItems().filter((item) => item.label == value);
@@ -95,9 +102,6 @@ function NewItem({ navigation, route }) {
         await getPropertiesInResourceTemplate(host, itemSelected[0].id).then(
           (res) => res.map((prop) => prop.data)
         )
-      );
-      await getPropertiesInResourceTemplate(host, itemSelected[0].id).then(
-        (res) => res.map((type) => (values[type] = ""))
       );
       setIDs(await getPropertyIds(host, itemSelected[0].id).then((res) => res));
     }
@@ -128,7 +132,6 @@ function NewItem({ navigation, route }) {
   const createItem = () => {
     let payload = {};
     let title = values[titles[0]];
-    console.log("title", values);
 
     let v = IDs.map((id, idx) => [
       {
@@ -136,9 +139,10 @@ function NewItem({ navigation, route }) {
         property_id: id,
         property_label: titles[idx],
         "@value": values[titles[idx]],
-        is_public: false
+        is_public: false,
       },
     ]);
+
     IDs.map((id, idx) => (payload[types[idx]["o:term"]] = v[idx]));
     payload["o:resource_template"] = {
       "@id": `http://${host}/api/resource_templates/${templateId}`,
@@ -148,83 +152,125 @@ function NewItem({ navigation, route }) {
     payload["o:resource_class"] = {
       "o:id": templates.class,
     };
-    payload["o:is_public"] = false
-    //make authentication pathway here for keys
-    SecureStore.getItemAsync("keys")
-      .then((res) =>
-        axios
-          .post(`http://${host}/api/items`, payload, {
-            params: {
-              key_identity: res.split(",")[0],
-              key_credential: res.split(",")[1],
-            },
-          })
-          .then((response) => {
-            console.log(response.data);
-            setItem([response.data["o:id"], user]);
-            setModal(true);
-          })
-          .catch((error) => {
-            console.log("error");
-          })
-      )
-      .catch((error) => console.log("credentials failed", error));
+    payload["o:is_public"] = false;
+    if (!title) {
+      setError(true);
+    } else {
+      setError(false);
+      SecureStore.getItemAsync("keys")
+        .then((keys) => {
+          {
+            route.params && route.params.mode && route.params.mode == "edit"
+              ? axios
+                  .patch(
+                    `http://${host}/api/items/${item[0]}?key_identity=${
+                      keys.split(",")[0]
+                    }&key_credential=${keys.split(",")[1]}`,
+                    payload
+                  )
+                  .then((res) => navigation.navigate("Confirm"))
+                  .catch((error) => console.log(error))
+              : axios
+                  .post(`http://${host}/api/items`, payload, {
+                    params: {
+                      key_identity: keys.split(",")[0],
+                      key_credential: keys.split(",")[1],
+                    },
+                  })
+                  .then((response) => {
+                    console.log(response.data);
+                    setItem([response.data["o:id"], user]);
+                    setModal(true);
+                  })
+                  .catch((error) => {
+                    console.log("error");
+                  });
+          }
+        })
+        .catch((error) => console.log("credentials failed", error));
+    }
   };
 
   const handleChangeText = (title, value, id) => {
+    setError(false);
     values[title + ""] = value;
     setValues({ ...values });
   };
 
   return (
     <ItemScreen style={{ flex: 1 }} exit={() => navigation.goBack()}>
-      <Header title="Create New Item" />
+      <Header
+        title={
+          route.params && route.params.mode && route.params.mode == "edit"
+            ? "Edit Item"
+            : "Create New Item"
+        }
+      />
       <View style={styles.body}>
-        <Formik initialValues={types} onSubmit={(values) => createItem(values)}>
-          {({ handleBlur, handleSubmit, resetForm, values }) => (
+        <Formik
+          initialValues={types}
+          onSubmit={(values) => {
+            createItem(values);
+          }}
+        >
+          {({ handleSubmit }) => (
             <>
-              <KeyboardAwareScrollView style={{ flex: 1, height: height - 130 }}>
-              <View>
-                <Text style={{ paddingBottom: 2, paddingLeft: 2 }}>
-                  Resource Templates
-                </Text>
-                <View style={styles.picker}>
-                  <RNPickerSelect
-                    items={getItems()}
-                    onValueChange={(value, idx) => loadFields(value, idx)}
-                  />
-                </View>
-                {templateSelected ? (
-                  <>
-                    {titles.map((title, idx) => (
-                      <TextInput
-                        onChangeText={(value) =>
-                          handleChangeText(title, value, IDs[idx])
-                        }
-                        multiline={false}
-                        name={title}
-                        id={IDs[idx]}
-                        value={values[title + ""]}
-                        key={idx}
-                      />
-                    ))}
-                    <View
-                      style={{
-                        alignItems: "center",
-                        marginTop: 10,
-                        marginBottom: 50,
+              <KeyboardAwareScrollView
+                style={{ flex: 1, height: height - 130 }}
+              >
+                <View>
+                  <Text style={{ paddingBottom: 2, paddingLeft: 2 }}>
+                    Resource Templates
+                  </Text>
+                  <View style={styles.picker}>
+                    <RNPickerSelect
+                      items={getItems()}
+                      onValueChange={(value, idx) => {
+                        loadFields(value, idx);
                       }}
-                    >
-                      <Button onPress={handleSubmit} title="CREATE" />
-                    </View>
-                  </>
-                ) : (
-                  <View>
-                    <Text>
-                      Please select a Resource Template to get started.
-                    </Text>
+                    />
                   </View>
-                )}
+                  {templateSelected ? (
+                    <>
+                      {titles.map((title, idx) => (
+                        <TextInput
+                          onChangeText={(value) =>
+                            handleChangeText(title, value, IDs[idx])
+                          }
+                          multiline={false}
+                          name={title}
+                          id={IDs[idx]}
+                          key={idx}
+                          value={values[title + ""]}
+                        />
+                      ))}
+                      <ErrorMessage error="Title required" visible={error} />
+                      <View
+                        style={{
+                          alignItems: "center",
+                          marginTop: 10,
+                          marginBottom: 50,
+                        }}
+                      >
+                        <Button
+                          onPress={handleSubmit}
+                          title={
+                            route.params &&
+                            route.params.mode &&
+                            route.params.mode == "edit"
+                              ? "EDIT"
+                              : "CREATE"
+                          }
+                        />
+                      </View>
+                    </>
+                  ) : (
+                    <View>
+                      <Text>
+                        Please select a Resource Template to get started.
+                      </Text>
+                    </View>
+                  )}
                 </View>
               </KeyboardAwareScrollView>
             </>

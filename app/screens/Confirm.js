@@ -63,18 +63,29 @@ function Confirm({ navigation }) {
         {!loading && (
           <>
             <Text weight="medium" style={{ fontSize: 24 }}>
-              {itemData[0][1]} {itemData[1][1]}
+              {itemData[0][1]}
             </Text>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("Create New Item", { mode: "edit" })
+              }
+            >
+              <Text>Edit content</Text>
+            </TouchableOpacity>
             <View>
               {itemData.map(
                 (prop, idx) =>
                   idx > 1 && (
                     <>
                       <View style={styles.prop} key={idx}>
-                        <Text style={{ fontSize: 18 }} weight="medium">
-                          {prop[0]}
-                        </Text>
-                        <Text>{prop[1]}</Text>
+                        <View style={{ maxWidth: "40%" }}>
+                          <Text style={{ fontSize: 18 }} weight="medium">
+                            {prop[0]}
+                          </Text>
+                        </View>
+                        <View style={{ maxWidth: "60%" }}>
+                          <Text>{prop[1]}</Text>
+                        </View>
                       </View>
                       <View
                         style={{
@@ -87,11 +98,11 @@ function Confirm({ navigation }) {
                   )
               )}
             </View>
-            <View>
+            {/* <View>
               <Text style={{ fontSize: 24, marginTop: 20 }} weight={"medium"}>
                 Media
               </Text>
-            </View>
+            </View> */}
           </>
         )}
       </View>

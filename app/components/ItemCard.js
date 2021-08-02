@@ -2,13 +2,14 @@ import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
+  Image,
   Dimensions,
   View,
   ScrollView,
 } from "react-native";
 import Text from "./Text";
 
-import { fetchItemData } from "../../api/utils/Omeka";
+import { fetchItemData, getThumbnail } from "../../api/utils/Omeka";
 
 const { width, height } = Dimensions.get("window");
 
@@ -28,6 +29,7 @@ function Card({
 }) {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [thumbnail, setThumbnail] = useState("");
 
   useEffect(() => {
     SecureStore.getItemAsync("host").then((host) => {
@@ -40,6 +42,8 @@ function Card({
             if (loading == true) {
               setProperties(res);
               setLoading(false);
+
+              getThumbnail(host, id, keys).then((res) => setThumbnail(res));
             }
           })
           .catch((error) => console.log("error", error));
@@ -75,7 +79,9 @@ function Card({
                         </Text>
                       </View>
                       <View style={{ maxWidth: "50%" }}>
-                        <Text style={{ fontSize: 18, maxHeight: 20 }}>{prop[1]}</Text>
+                        <Text style={{ fontSize: 18, maxHeight: 20 }}>
+                          {prop[1]}
+                        </Text>
                       </View>
                     </View>
                   </View>
@@ -83,7 +89,16 @@ function Card({
             )}
         </View>
       </ScrollView>
-      <View style={styles.thumbnail}></View>
+      <View style={styles.thumbnail}>
+        {thumbnail ? (
+          <Image
+            source={{
+              uri: thumbnail,
+            }}
+            style={{ width: "100%", height: "100%", borderRadius: 10 }}
+          />
+        ) : null}
+      </View>
     </TouchableOpacity>
   );
 }
@@ -110,7 +125,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: colors.primary,
-    fontSize: 20,
+    fontSize: 22,
   },
   prop: {
     flexDirection: "row",
@@ -124,7 +139,7 @@ const styles = StyleSheet.create({
     height: "100%",
     borderRadius: 10,
     borderColor: colors.blue,
-    borderWidth: 2
+    borderWidth: 2,
   },
 });
 

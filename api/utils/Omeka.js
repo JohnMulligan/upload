@@ -1,4 +1,5 @@
 import axios from "axios";
+import * as SecureStore from "expo-secure-store";
 
 const PER_PAGE = 9999;
 
@@ -84,10 +85,11 @@ export const fetchOne = async (baseAddress, endpoint, id, params = null) => {
   return res.data;
 };
 
-export const getResourceTemplate = (baseAddress, templateId) => {
-  return axios.get(
+export const getResourceTemplate = async (baseAddress, templateId) => {
+  const res = await axios.get(
     "http://" + baseAddress + "/api/resource_templates/" + templateId
   );
+  return res;
 };
 
 export const getPropertiesInResourceTemplate = (baseAddress, templateId) => {
@@ -116,4 +118,29 @@ export const createItem = (baseAddress, values) => {
     },
     headers: headers,
   });
+};
+
+// export const patchItem = (itemId, payload) => {
+//   SecureStore.getItemAsync("host").then((host) => {
+//     SecureStore.getItemAsync("keys").then((keys) => {
+//       console.log(`http://${host}/api/items/${itemId}?key_identity=${
+//           keys.split(",")[0]
+//         }&key_credential=${keys.split(",")[1]}`)
+//       return axios.patch(
+//         `${host}/api/items/${itemId}?key_identity=${
+//           keys.split(",")[0]
+//         }&key_credential=${keys.split(",")[1]}`,
+//         payload
+//       );
+//     });
+//   });
+// };
+
+export const getThumbnail = async (baseAddress, id, keys) => {
+  const res = await axios.get(
+    `http://${baseAddress}/api/items/${id}?key_identity=${
+      keys.split(",")[0]
+    }&key_credential=${keys.split(",")[1]}`
+  );
+  return res.data["thumbnail_display_urls"]["square"];
 };

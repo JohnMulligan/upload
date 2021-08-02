@@ -13,20 +13,39 @@ import Text from "../components/Text";
 import Button from "../components/Button";
 import RNPickerSelect from "react-native-picker-select";
 import * as SecureStore from "expo-secure-store";
+import TextInput from "../components/TextInput";
 
 import { Formik } from "formik";
 import colors from "../config/colors";
 
 import * as axios from "axios";
 
-import { fetchResourceTemplates, getResourceTemplate } from "../../api/utils/Omeka";
+import {
+  fetchOne,
+  fetchResourceTemplates,
+  fetchProperties,
+  getPropertiesInResourceTemplate,
+  getPropertyIds,
+  getResourceTemplate,
+  fetchItemData,
+} from "../../api/utils/Omeka";
 const { width, height } = Dimensions.get("window");
 
 function FindAndEdit({ navigation, route }) {
   const [item, setItem] = useState(2);
-  const [fields, setFields] = useState(["Resource Template", "Resource Class"]);
+  const [values, setValues] = useState({});
+
+  const [host, setHost] = useState("");
+
+  const [itemData, setItemData] = useState({});
+  const [fields, setFields] = useState({});
   const [resourceTemplates, setResourceTemplates] = useState([]);
   const [resourceTemplate, setResourceTemplate] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const [titles, setTitles] = useState([]);
+  const [types, setTypes] = useState({});
+  const [IDs, setIDs] = useState([]);
 
   const getResourceTemplates = () => {
     let templates = [];
@@ -41,10 +60,12 @@ function FindAndEdit({ navigation, route }) {
     return templates;
   };
 
+  //load all resource templates
   useEffect(() => {
     let isMounted = true;
-    setItem(route.params.item)
+    setItem(route.params.item);
     SecureStore.getItemAsync("host").then((host) => {
+      setHost(host);
       fetchResourceTemplates(host)
         .then((response) => {
           if (isMounted) setResourceTemplates(response);
@@ -56,10 +77,87 @@ function FindAndEdit({ navigation, route }) {
     });
   }, []);
 
+  //load item's resource template
+  //TO DO: replace hardcoded host address
   useEffect(() => {
-    getResourceTemplate("158.101.99.206", route.params.item["o:resource_template"]["o:id"]).
-    then(res => setResourceTemplate(res.data["o:label"]));
-  })
+    if (!resourceTemplate) {
+      console.log("1");
+      SecureStore.getItemAsync("host").then((host) => {
+        getResourceTemplate(
+          host,
+          route.params.item["o:resource_template"]["o:id"]
+        ).then((res) => {
+          console.log(res.data["o:label"]);
+          setResourceTemplate(res.data["o:label"]);
+        });
+      });
+    }
+  });
+
+  //load item data
+  useEffect(() => {
+    SecureStore.getItemAsync("host").then((host) => {
+      SecureStore.getItemAsync("keys").then((keys) => {
+        fetchItemData(host, "items", route.params.item["o:id"], {
+          key_identity: keys.split(",")[0],
+          key_credential: keys.split(",")[1],
+        })
+          .then((res) => {
+            if (loading == true) {
+              var fields = {};
+              res.map((prop, idx) => (fields[prop[0]] = prop[1]));
+              console.log(fields);
+              setValues(fields);
+              setItemData(res);
+              setLoading(false);
+            }
+          })
+          .catch((error) => console.log("error", error));
+      });
+    });
+  });
+
+  const getTemplates = () => {
+    let templates = [];
+    resourceTemplates.map((item) =>
+      templates.push({
+        label: item["o:label"],
+        value: item["o:label"],
+        class: item["o:resource_class"]["o:id"],
+        id: item["o:id"],
+      })
+    );
+    return templates;
+  };
+
+  const loadFields = async (value, idx) => {
+    console.log(value, idx);
+    setValues({});
+    setResourceTemplate(value);
+    const id = route.params.item["o:resource_template"]["o:id"];
+    //voids "Select an item"
+    if (idx != 0) {
+      setTitles(
+        await getPropertiesInResourceTemplate(host, id).then((res) =>
+          res.map((prop) => prop.data["o:label"])
+        )
+      );
+      setTypes(
+        await getPropertiesInResourceTemplate(host, id).then((res) =>
+          res.map((prop) => prop.data)
+        )
+      );
+      await getPropertiesInResourceTemplate(host, id).then((res) =>
+        res.map((type) => (values[type] = ""))
+      );
+      setIDs(await getPropertyIds(host, id).then((res) => res));
+    }
+  };
+
+  const handleChangeText = (title, value, id) => {
+    values[title + ""] = value;
+    setValues({ ...values });
+  };
 
   return (
     <ItemScreen
@@ -74,49 +172,58 @@ function FindAndEdit({ navigation, route }) {
         weight="medium"
         style={{ fontSize: 24, marginTop: 30, marginBottom: 15 }}
       >
-        Editing {item["o:title"]}
+        {/* Editing {item["o:title"]} */}
+        Editing disabled
       </Text>
-      <Formik
-        initialValues={{ title: "" }}
-        onSubmit={(values) => createItem(values)}
-      >
-        {({ handleBlur, handleSubmit, resetForm, values }) => (
-          <ScrollView style={{ width: "95%" }}>
-            <Text style={{ paddingBottom: 2, paddingLeft: 2 }}>
-              Resource Templates
-            </Text>
-            <View style={styles.picker}>
-              <RNPickerSelect
-                items={getResourceTemplates()}
-                value={resourceTemplate}
-                onValueChange={(value, idx) => console.log("value", value)}
-              />
-            </View>
-
-            {/* {titles.map((title, idx) => (
-              <TextInput
-                onChangeText={(value) =>
-                  handleChangeText(title, value, IDs[idx])
-                }
-                multiline={true}
-                name={title}
-                id={IDs[idx]}
-                value={values[title + ""]}
-                key={idx}
-              />
-            ))} */}
-            <View
-              style={{
-                alignItems: "center",
-                marginTop: 10,
-                marginBottom: 50,
-              }}
-            >
-              <Button onPress={handleSubmit} title="DONE" />
-            </View>
-          </ScrollView>
-        )}
-      </Formik>
+      {/* {!loading ? (
+        <Formik initialValues={fields} onSubmit={(values) => editItem(values)}>
+          {({ handleBlur, handleSubmit, resetForm, values }) => (
+            <ScrollView style={{ width: "95%" }}>
+              <Text style={{ paddingBottom: 2, paddingLeft: 2 }}>
+                Resource Templates
+              </Text>
+              <View style={styles.picker}>
+                <RNPickerSelect
+                  items={getResourceTemplates()}
+                  value={resourceTemplate}
+                  onValueChange={(value, idx) => loadFields(value, idx)}
+                />
+              </View>
+              {titles
+                ? titles.map((title, idx) => (
+                    <TextInput
+                      onChangeText={(value) =>
+                        handleChangeText(title, value, IDs[idx])
+                      }
+                      multiline={false}
+                      name={title}
+                      id={IDs[idx]}
+                      value={values[title + ""]}
+                      key={idx}
+                    />
+                  ))
+                : itemData.map((title, idx) => (
+                    <TextInput
+                      onChangeText={(value) => console.log(value)}
+                      name={title[0]}
+                      value={title[1]}
+                    />
+                  ))}
+              <View
+                style={{
+                  alignItems: "center",
+                  marginTop: 10,
+                  marginBottom: 50,
+                }}
+              >
+                <Button onPress={handleSubmit} title="DONE" />
+              </View>
+            </ScrollView>
+          )}
+        </Formik>
+      ) : (
+        <Text>Loading...</Text>
+      )} */}
     </ItemScreen>
   );
 }
