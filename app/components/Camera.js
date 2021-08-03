@@ -42,7 +42,7 @@ const CameraPreview = ({
   const [optionsModal, setOptionsModal] = useState(false);
   const [confirmButton, setConfirmButton] = useState(false);
   const [uploadPercentage, setUploadPercentage] = useState([]);
-  // const [uploadTracker, setUploadTracker] = useState(false);
+  const [uploadTracker, setUploadTracker] = useState(false);
   const [pageNumberModal, setPageNumberModal] = useState(false);
 
   next = function () {
@@ -60,7 +60,7 @@ const CameraPreview = ({
     const uploadBegin = (response) => {
       var jobId = response.jobId;
       console.log("UPLOAD HAS BEGUN! JobId: " + jobId);
-      // setUploadTracker(true);
+      setUploadTracker(true);
     };
 
     const uploadProgress = (response) => {
@@ -100,6 +100,7 @@ const CameraPreview = ({
           progress: uploadProgress,
         }).promise.then((response) => {
           if (response.statusCode == 200) {
+            setUploadTracker(false);
             jsonresponse = JSON.parse(response.body);
             RNFS.hash(fileUri, "sha256")
               .then((rnhash) => {
@@ -268,9 +269,23 @@ const CameraPreview = ({
         </>
       )}
 
-      {/* {uploadTracker && (
-        <Modal title={`Upload is ${uploadProgress}% done...`}></Modal>
-      )} */}
+      {uploadTracker && (
+        <>
+          <Modal
+            style={{ zIndex: 11 }}
+            title={`Upload is ${uploadPercentage}% done...`}
+          ></Modal>
+          <View
+            style={{
+              width: width,
+              height: height,
+              position: "absolute",
+              backgroundColor: "rgba(0, 0, 0, 0.4)",
+              zIndex: 10,
+            }}
+          />
+        </>
+      )}
 
       <ImageBackground
         source={{ uri: fileUri }}

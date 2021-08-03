@@ -57,49 +57,12 @@ function UploadMedia({ navigation, route }) {
           />
         </TouchableOpacity>
       </View>
-      {/* <View
-        style={{
-          flexDirection: "row",
-          position: "absolute",
-          backgroundColor: "white",
-          width: "100%",
-          zIndex: 10,
-          padding: 15,
-          paddingTop: 50,
-          height: 100,
-        }}
-      >
-        <TouchableOpacity>
-          <Image
-            source={require("../config/Icons/information.png")}
-            style={{ width: 20, height: 20 }}
-          />
-
-        </TouchableOpacity>
-        <Text weight="medium">{item}, </Text>
-        {route.params.type == 0 && <Text>Page {route.params.singlePage}</Text>}
-        {route.params.type == 1 && <Text>Page {currentPage}</Text>}
-        {route.params.type == 2 && <Text>Set page number</Text>}
-      </View> */}
       <Camera
         navigation={navigation}
         params={route.params}
         page={currentPage}
         setPage={setCurrentPage}
       />
-
-      {/* <NavigationButton
-        onPress={() => navigation.goBack()}
-        label="Back"
-        direction="left"
-        style={styles.back}
-      />
-      <NavigationButton
-        onPress={() => skip()}
-        label="Done"
-        direction="right"
-        style={styles.next}
-      /> */}
     </>
   );
 }
