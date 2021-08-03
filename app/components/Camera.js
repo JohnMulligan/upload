@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -25,9 +25,10 @@ import ItemContext from "../../api/auth/itemContext";
 import * as SecureStore from "expo-secure-store";
 import RNFS from "react-native-fs";
 
-// import {spawnThread} from 'react-native-multithreading';
-
 const { width, height } = Dimensions.get("window");
+
+var images = [];
+var uploading = false;
 
 const CameraPreview = ({
   fileUri,
@@ -42,8 +43,17 @@ const CameraPreview = ({
   const [optionsModal, setOptionsModal] = useState(false);
   const [confirmButton, setConfirmButton] = useState(false);
   const [uploadPercentage, setUploadPercentage] = useState([]);
-  // const [uploadTracker, setUploadTracker] = useState(false);
+  const [uploadTracker, setUploadTracker] = useState(false);
   const [pageNumberModal, setPageNumberModal] = useState(false);
+
+  useEffect(() => {
+    images.map((image, idx) => {
+      if (image["progress"] == 0 && !uploading) {
+        uploading = true;
+        uploadImage(image["item"], image["fileUri"], image["files"], idx);
+      }
+    });
+  });
 
   next = function () {
     const type = params.type;
@@ -56,11 +66,11 @@ const CameraPreview = ({
     }
   };
 
-  const uploadImage = (item, fileUri, files) => {
+  const uploadImage = (item, fileUri, files, idx) => {
     const uploadBegin = (response) => {
       var jobId = response.jobId;
       console.log("UPLOAD HAS BEGUN! JobId: " + jobId);
-      // setUploadTracker(true);
+      setUploadTracker(true);
     };
 
     const uploadProgress = (response) => {
@@ -69,6 +79,7 @@ const CameraPreview = ({
       );
       setUploadPercentage(percentage);
       console.log("UPLOAD IS " + percentage + "% DONE!");
+      images[idx] = percentage;
     };
 
     SecureStore.getItemAsync("host").then((host) => {
@@ -106,6 +117,8 @@ const CameraPreview = ({
                 if (jsonresponse["o:sha256"] == rnhash) {
                   console.log("same!!");
                   next();
+                  images.pop(0);
+                  uploading = false;
                 }
               })
               .catch((error) => console.log("error", error));
@@ -128,8 +141,10 @@ const CameraPreview = ({
         filetype: "image/jpeg",
       },
     ];
-
-    uploadImage(item, fileUri, files);
+    images.push({ item: item, uri: fileUri, files: files, progress: 0 });
+    console.log(images);
+    resetPhoto();
+    setPage(page + 1);
   };
 
   const uploadSamePageMedia = () => {
@@ -288,6 +303,7 @@ export default class CameraScreen extends React.Component {
 
   componentDidMount() {
     const item = this.context;
+    console.log(item);
     if (item) this.setState({ item: item["item"][0] });
     //item[1] holds other options (like user, booleans, etc.)
     this.setState({ page: this.props.page });
