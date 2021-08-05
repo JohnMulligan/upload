@@ -29,6 +29,96 @@ const { width, height } = Dimensions.get("window");
 
 var images = [];
 var uploading = false;
+var uploadpercentage = 0;
+var uploadnum = 0;
+var uploadidx = -1;
+
+const checkUploading = function () {
+  console.log("tick");
+  if (!uploading) {
+    images.map((image, idx) => {
+      if (image["progress"] == 0 && !uploading) {
+        uploading = true;
+        uploadidx = idx;
+        uploadImage(
+          image["item"],
+          image["uri"],
+          image["files"],
+          image["page"],
+          idx
+        );
+        return [uploadpercentage, uploadnum];
+      } else {
+        return ["DONE", uploadnum];
+      }
+    });
+  }
+  return [uploadpercentage, uploadnum];
+};
+
+const uploadImage = (item, fileUri, files, page, idx) => {
+  const uploadBegin = (response) => {
+    var jobId = response.jobId;
+    console.log("UPLOAD HAS BEGUN! JobId: " + jobId);
+    uploadnum = jobId;
+  };
+
+  const uploadProgress = (response) => {
+    var percentage = Math.floor(
+      (response.totalBytesSent / response.totalBytesExpectedToSend) * 100
+    );
+    console.log("UPLOAD IS " + percentage + "% DONE!");
+    images[idx]["progress"] = percentage;
+    uploadpercentage = percentage;
+  };
+
+  SecureStore.getItemAsync("host").then((host) => {
+    SecureStore.getItemAsync("keys").then((keys) => {
+      RNFS.uploadFiles({
+        toUrl: `http://${host}/api/media?key_identity=${
+          keys.split(",")[0]
+        }&key_credential=${keys.split(",")[1]}`,
+        files: files,
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+        },
+        fields: {
+          data: `{
+              "o:ingester": "upload", 
+              "file_index": 0, 
+              "o:item": {"o:id": ${item} }, 
+              "bibo:number": [
+                {
+                  "type": "literal", 
+                  "property_id": 108,
+                  "@value": "${page}"
+                }
+              ]
+            }`,
+        },
+        begin: uploadBegin,
+        progress: uploadProgress,
+      })
+        .promise.then((response) => {
+          if (response.statusCode == 200) {
+            jsonresponse = JSON.parse(response.body);
+            RNFS.hash(fileUri, "sha256")
+              .then((rnhash) => {
+                if (jsonresponse["o:sha256"] == rnhash) {
+                  console.log("SHA VERIFIED");
+                  uploading = false;
+                }
+              })
+              .catch((error) => console.log("error", error));
+          } else {
+            console.log("SERVER ERROR", response);
+          }
+        })
+        .catch((error) => console.log("error", error));
+    });
+  });
+};
 
 const CameraPreview = ({
   fileUri,
@@ -46,91 +136,8 @@ const CameraPreview = ({
   const [uploadTracker, setUploadTracker] = useState(false);
   const [pageNumberModal, setPageNumberModal] = useState(false);
 
-  useEffect(() => {
-    images.map((image, idx) => {
-      if (image["progress"] == 0 && !uploading) {
-        uploading = true;
-        uploadImage(image["item"], image["fileUri"], image["files"], idx);
-      }
-    });
-  });
-
-  next = function () {
-    const type = params.type;
-    if (type == 1) {
-      uploadNextPageMedia();
-    } else if (type == 2) {
-      setOptionsModal(true);
-    } else {
-      navigation.navigate("Confirm");
-    }
-  };
-
-  const uploadImage = (item, fileUri, files, idx) => {
-    const uploadBegin = (response) => {
-      var jobId = response.jobId;
-      console.log("UPLOAD HAS BEGUN! JobId: " + jobId);
-      setUploadTracker(true);
-    };
-
-    const uploadProgress = (response) => {
-      var percentage = Math.floor(
-        (response.totalBytesSent / response.totalBytesExpectedToSend) * 100
-      );
-      setUploadPercentage(percentage);
-      console.log("UPLOAD IS " + percentage + "% DONE!");
-      images[idx] = percentage;
-    };
-
-    SecureStore.getItemAsync("host").then((host) => {
-      SecureStore.getItemAsync("keys").then((keys) => {
-        RNFS.uploadFiles({
-          toUrl: `http://${host}/api/media?key_identity=${
-            keys.split(",")[0]
-          }&key_credential=${keys.split(",")[1]}`,
-          files: files,
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-          },
-          fields: {
-            data: `{
-              "o:ingester": "upload", 
-              "file_index": 0, 
-              "o:item": {"o:id": ${item} }, 
-              "bibo:number": [
-                {
-                  "type": "literal", 
-                  "property_id": 108,
-                  "@value": "${page}"
-                }
-              ]
-            }`,
-          },
-          begin: uploadBegin,
-          progress: uploadProgress,
-        }).promise.then((response) => {
-          if (response.statusCode == 200) {
-            jsonresponse = JSON.parse(response.body);
-            RNFS.hash(fileUri, "sha256")
-              .then((rnhash) => {
-                if (jsonresponse["o:sha256"] == rnhash) {
-                  console.log("same!!");
-                  next();
-                  images.pop(0);
-                  uploading = false;
-                }
-              })
-              .catch((error) => console.log("error", error));
-          } else {
-            console.log("SERVER ERROR", response);
-          }
-        });
-      });
-    });
-  };
-
-  keepPicture = async function (item, fileUri) {
+  keepPicture = function (item, fileUri) {
+    setOptionsModal(true);
     if (!item) item = params.testItem;
     var files = [
       {
@@ -141,10 +148,21 @@ const CameraPreview = ({
         filetype: "image/jpeg",
       },
     ];
-    images.push({ item: item, uri: fileUri, files: files, progress: 0 });
-    console.log(images);
-    resetPhoto();
-    setPage(page + 1);
+    images.push({
+      item: item,
+      uri: fileUri,
+      files: files,
+      progress: 0,
+      page: page,
+    });
+    if (params.type == 1) {
+      setPage(page + 1);
+      resetPhoto();
+    } else if (params.type == 2) {
+      setOptionsModal(true);
+    } else {
+      navigation.navigate("Confirm", { params: { numPages: images.length } });
+    }
   };
 
   const uploadSamePageMedia = () => {
@@ -176,12 +194,19 @@ const CameraPreview = ({
             zIndex: 40,
           }}
           direction="right"
-          onPress={() => navigation.navigate("Confirm")}
+          onPress={() =>
+            navigation.navigate("Confirm", {
+              params: { numPages: images.length },
+            })
+          }
         />
       )}
 
-      {optionsModal && params.type == 2 ? (
-        <Modal title={`Media on page ${page} added. Continue adding?`}>
+      {optionsModal ? (
+        <Modal
+          style={{ zIndex: 200 }}
+          title={`Media on page ${page} added. Continue adding?`}
+        >
           <View style={styles.children}>
             <ModalButton
               onPress={() => uploadSamePageMedia()}
@@ -198,13 +223,19 @@ const CameraPreview = ({
             line={1}
             title={"SAVE & FINISH"}
             color={colors.light}
-            onPress={() => navigation.navigate("Confirm")}
+            onPress={() => {
+              setOptionsModal(false);
+              resetPhoto();
+              navigation.navigate("Confirm", {
+                params: { numPages: images.length },
+              });
+            }}
           />
         </Modal>
       ) : (
         <>
           {pageNumberModal ? (
-            <Modal title={`Set page number`}>
+            <Modal style={{ zIndex: 100 }} title={`Set page number`}>
               <View style={styles.children}>
                 <ModalButton
                   onPress={() => setPage(page - 1)}
@@ -283,10 +314,6 @@ const CameraPreview = ({
         </>
       )}
 
-      {/* {uploadTracker && (
-        <Modal title={`Upload is ${uploadProgress}% done...`}></Modal>
-      )} */}
-
       <ImageBackground
         source={{ uri: fileUri }}
         style={{
@@ -307,6 +334,18 @@ export default class CameraScreen extends React.Component {
     if (item) this.setState({ item: item["item"][0] });
     //item[1] holds other options (like user, booleans, etc.)
     this.setState({ page: this.props.page });
+
+    this.checkUploading = setInterval(() => {
+      this.setState({ upload: checkUploading() });
+    }, 5000);
+
+    // this.checkError = setInterval(() => {
+    //   checkError();
+    // }, 10000);
+  }
+
+  componentWillUnMount() {
+    clearInterval(this.interval);
   }
 
   state = {
@@ -329,31 +368,8 @@ export default class CameraScreen extends React.Component {
     cameraPreview: false,
     fileUri: null,
     pageNumberModal: false,
+    upload: [],
   };
-
-  // zoomOut() {
-  //   this.setState({
-  //     zoom: this.state.zoom - 0.1 < 0 ? 0 : this.state.zoom - 0.1,
-  //   });
-  // }
-
-  // zoomIn() {
-  //   this.setState({
-  //     zoom: this.state.zoom + 0.1 > 1 ? 1 : this.state.zoom + 0.1,
-  //   });
-  // }
-
-  // setFocusDepth(depth) {
-  //   this.setState({
-  //     depth,
-  //   });
-  // }
-
-  // toggleFocus() {
-  //   this.setState({
-  //     autoFocus: this.state.autoFocus === "on" ? "off" : "on",
-  //   });
-  // }
 
   touchToFocus(event) {
     const { pageX, pageY } = event.nativeEvent;
@@ -361,28 +377,6 @@ export default class CameraScreen extends React.Component {
     const screenHeight = Dimensions.get("window").height;
     const isPortrait = screenHeight > screenWidth;
   }
-
-  //   let x = pageX / screenWidth;
-  //   let y = pageY / screenHeight;
-  //   // Coordinate transform for portrait. See autoFocusPointOfInterest in docs for more info
-  //   if (isPortrait) {
-  //     x = pageY / screenHeight;
-  //     y = -(pageX / screenWidth) + 1;
-  //   }
-
-  //   this.setState({
-  //     autoFocusPoint: {
-  //       normalized: { x, y },
-  //       drawRectPosition: { x: pageX, y: pageY },
-  //     },
-  //   });
-  // }
-
-  // setFocusDepth(depth) {
-  //   this.setState({
-  //     depth,
-  //   });
-  // }
 
   takePicture = async function () {
     if (this.camera) {
@@ -428,42 +422,6 @@ export default class CameraScreen extends React.Component {
         }}
         captureAudio={false}
       >
-        {/* <View style={StyleSheet.absoluteFill}>
-          <View style={[styles.autoFocusBox, drawFocusRingPosition]} />
-          <TouchableWithoutFeedback style = {{zIndex: 100}} onPress={this.touchToFocus.bind(this)}>
-            <View style={{ flex: 1 }} />
-          </TouchableWithoutFeedback>
-        </View> */}
-
-        {/* <Slider
-            style={{ width: 150, marginTop: 15, alignSelf: "flex-end" }}
-            onValueChange={this.setFocusDepth.bind(this)}
-            step={0.1}
-            disabled={this.state.autoFocus === "on"}
-          /> */}
-        {/* {this.state.zoom !== 0 && (
-            <Text style={[styles.flipText, styles.zoomText]}>
-              Zoom: {this.state.zoom}
-            </Text>
-          )} */}
-
-        {/* <TouchableOpacity
-              style={[styles.flipButton, { flex: 0.1, alignSelf: "flex-end" }]}
-              onPress={this.zoomIn.bind(this)}
-            >
-              <Text style={styles.flipText}> + </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.flipButton, { flex: 0.1, alignSelf: "flex-end" }]}
-              onPress={this.zoomOut.bind(this)}
-            >
-              <Text style={styles.flipText}> - </Text>
-            </TouchableOpacity> */}
-        {/* <SmallButton
-            style={styles.af}
-            title={"AF:" + this.state.autoFocus}
-            onPress={this.toggleFocus.bind(this)}
-          /> */}
         <SmallButton
           style={styles.snap}
           onPress={this.takePicture.bind(this)}
@@ -512,6 +470,30 @@ export default class CameraScreen extends React.Component {
             </View>
           </Modal>
         ) : null}
+        {uploadnum != 0 && (
+          <View
+            style={{
+              position: "absolute",
+              top: 100,
+              left: 0.05 * width,
+              backgroundColor: "rgba(134, 157, 156, 0.5)",
+              borderRadius: 20,
+              alignItems: "center",
+              marginTop: 10,
+              padding: 15,
+              width: 0.9 * width,
+              zIndex: 100,
+            }}
+          >
+            {uploadpercentage == 100 && (
+              <Text>Upload {this.state.upload[1]} finished</Text>
+            )}
+            <Text>
+              Uploading image {this.state.upload[1]}... {this.state.upload[0]}%
+              done...
+            </Text>
+          </View>
+        )}
         <NavigationButton
           style={{
             position: "absolute",
@@ -520,7 +502,11 @@ export default class CameraScreen extends React.Component {
             zIndex: 40,
           }}
           direction="right"
-          onPress={() => this.props.navigation.navigate("Confirm")}
+          onPress={() =>
+            this.props.navigation.navigate("Confirm", {
+              params: { numPages: images.length },
+            })
+          }
         />
         <NavigationButton
           style={styles.back}

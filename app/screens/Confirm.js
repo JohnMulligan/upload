@@ -30,7 +30,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width, height } = Dimensions.get("window");
 
-function Confirm({ navigation }) {
+function Confirm({ navigation, route }) {
   const { user, setUser } = useContext(AuthContext);
   const { item, setItem } = useContext(ItemContext);
   const [itemData, setItemData] = useState({});

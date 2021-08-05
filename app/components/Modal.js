@@ -1,18 +1,19 @@
-import React from 'react';
-import {StyleSheet, View, Dimensions} from 'react-native';
-import Text from './Text';
+import React from "react";
+import { StyleSheet, View, Dimensions } from "react-native";
+import Text from "./Text";
 
-import colors from '../config/colors';
+import colors from "../config/colors";
 
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
-function Modal({title, color = 'primary', children, style}) {
+function Modal({ title, color = "primary", children, style }) {
   return (
     <View style={[styles.modal, style]}>
-      
-      <Text weight="bold" style={styles.text}>
-        {title}
-      </Text>
+      {title && (
+        <Text weight="bold" style={styles.text}>
+          {title}
+        </Text>
+      )}
       {children}
     </View>
   );
@@ -20,22 +21,22 @@ function Modal({title, color = 'primary', children, style}) {
 
 const styles = StyleSheet.create({
   modal: {
-    position: 'absolute',
-    top: .4*height,
+    position: "absolute",
+    top: 0.4 * height,
     left: 0.05 * width,
     backgroundColor: colors.primary,
     borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 10,
     padding: 25,
     width: 0.9 * width,
-    zIndex: 10
+    zIndex: 100,
   },
   text: {
     color: colors.blue,
     marginBottom: 10,
-    textAlign: 'center'
+    textAlign: "center",
   },
 });
 

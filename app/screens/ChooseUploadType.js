@@ -171,6 +171,7 @@ function ChooseUploadType({ navigation }) {
             text="I don't want to upload any media"
             description="Finish item now. You can go back and upload more media later."
           />
+          <Text style = {{color: 'red'}}>Once an image upload has started, close the app. Otherwise, the upload will be interrupted!</Text>
         </ScrollView>
       </View>
       <NavigationButton
