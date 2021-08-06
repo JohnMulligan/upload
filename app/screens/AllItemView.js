@@ -6,6 +6,7 @@ import ItemScreen from "../components/ItemScreen";
 import Header from "../components/Header";
 
 import { fetchItemData, getThumbnail } from "../../api/utils/Omeka";
+import { useFocusEffect } from "@react-navigation/native";
 
 import { fetch, getPropertiesInResourceTemplate } from "../../api/utils/Omeka";
 import * as SecureStore from "expo-secure-store";
@@ -19,40 +20,44 @@ function AllItemView({ navigation }) {
     // console.log(item);
   };
 
-  useEffect(() => {
-    SecureStore.getItemAsync("host").then((host) => {
-      SecureStore.getItemAsync("keys").then((keys) => {
-        fetch(
-          (baseAddress = host),
-          (endpoint = "items"),
-          (sortBy = "id"),
-          (params = {
-            key_identity: keys.split(",")[0],
-            key_credential: keys.split(",")[1],
-          })
-        )
-          .then((res) => {
-            setItems(
-              res.map((item, idx) => (
-                <ItemCard
-                  key={idx}
-                  title={item["o:title"]}
-                  id={item["o:id"]}
-                  data={item}
-                  onPress={() =>
-                    navigation.navigate("Create Item", {
-                      screen: "Choose Upload Type",
-                      params: { item: item["o:id"] },
-                    })
-                  }
-                />
-              ))
-            );
-            setLoading(false);
-          })
-          .catch((error) => console.log("error", error));
+  useFocusEffect(() => {
+    if (loading) {
+      // console.log('all')
+      //server-side gets items 3 times despite having the client side log 2 times
+      SecureStore.getItemAsync("host").then((host) => {
+        SecureStore.getItemAsync("keys").then((keys) => {
+          fetch(
+            (baseAddress = host),
+            (endpoint = "items"),
+            (sortBy = "id"),
+            (params = {
+              key_identity: keys.split(",")[0],
+              key_credential: keys.split(",")[1],
+            })
+          )
+            .then((res) => {
+              setItems(
+                res.map((item, idx) => (
+                  <ItemCard
+                    key={idx}
+                    title={item["o:title"]}
+                    id={item["o:id"]}
+                    data={item}
+                    onPress={() =>
+                      navigation.navigate("Create Item", {
+                        screen: "Choose Upload Type",
+                        params: { item: item["o:id"] },
+                      })
+                    }
+                  />
+                ))
+              );
+              setLoading(false);
+            })
+            .catch((error) => console.log("error", error));
+        });
       });
-    });
+    }
   });
 
   // useEffect(() => {
@@ -77,7 +82,9 @@ function AllItemView({ navigation }) {
       <View style={{ width: "100%" }}>
         <Header style={{ paddingLeft: 10 }} title="Upload to Existing" />
       </View>
-      <ScrollView style={{ flex: 1 }}>{loading ? <Text>Loading...</Text> : items}</ScrollView>
+      <ScrollView style={{ flex: 1 }}>
+        {loading ? <Text>Loading...</Text> : items}
+      </ScrollView>
     </ItemScreen>
   );
 }

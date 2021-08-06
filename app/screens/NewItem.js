@@ -11,6 +11,7 @@ import {
 import RNPickerSelect from "react-native-picker-select";
 import * as axios from "axios";
 import { Formik, useFormikContext } from "formik";
+import { useFocusEffect } from "@react-navigation/native";
 
 import Button from "../components/Button";
 import Card from "../components/Card";
@@ -66,20 +67,23 @@ function NewItem({ navigation, route }) {
 
   const [loading, setLoading] = useState(true);
   //make authentication pathway here for keys
-  useEffect(() => {
-    // let isMounted = true;
+  useFocusEffect(() => {
+    if (loading) {
+      // console.log(".");
+      if (route.params && route.params.item) {
+        setItem(route.params.item["o:id"]);
+      }
 
-    if (route.params && route.params.item) {
-      setItem(route.params.item["o:id"]);
+      SecureStore.getItemAsync("host").then((host) => {
+        setHost(host);
+        fetchResourceTemplates(host)
+          .then((response) => {
+            setResourceTemplates(response);
+          })
+          .catch((error) => console.log(error));
+        setLoading(false);
+      });
     }
-
-    SecureStore.getItemAsync("host").then((host) => {
-      setHost(host);
-      fetchResourceTemplates(host)
-        .then((response) => setResourceTemplates(response))
-        .catch((error) => console.log(error));
-      setLoading(false);
-    });
   });
 
   const loadFields = async (value, idx) => {
