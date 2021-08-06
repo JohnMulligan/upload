@@ -25,8 +25,6 @@ import ItemContext from "../../api/auth/itemContext";
 import * as SecureStore from "expo-secure-store";
 import RNFS from "react-native-fs";
 
-// import {spawnThread} from 'react-native-multithreading';
-
 const { width, height } = Dimensions.get("window");
 
 const CameraPreview = ({
@@ -38,12 +36,14 @@ const CameraPreview = ({
   setPage,
   type,
   resetPhoto,
+  editing
 }: any) => {
   const [optionsModal, setOptionsModal] = useState(false);
   const [confirmButton, setConfirmButton] = useState(false);
   const [uploadPercentage, setUploadPercentage] = useState([]);
   const [uploadTracker, setUploadTracker] = useState(false);
   const [pageNumberModal, setPageNumberModal] = useState(false);
+  const [failureModal, setFailureModal] = useState(false);
 
   next = function () {
     const type = params.type;
@@ -57,6 +57,7 @@ const CameraPreview = ({
   };
 
   const uploadImage = (item, fileUri, files) => {
+    console.log(item, fileUri, files);
     const uploadBegin = (response) => {
       var jobId = response.jobId;
       console.log("UPLOAD HAS BEGUN! JobId: " + jobId);
@@ -112,6 +113,8 @@ const CameraPreview = ({
               .catch((error) => console.log("error", error));
           } else {
             console.log("SERVER ERROR", response);
+            setFailureModal(true);
+            setUploadTracker(false);
           }
         });
       });
@@ -119,6 +122,8 @@ const CameraPreview = ({
   };
 
   keepPicture = async function (item, fileUri) {
+    setFailureModal(false);
+    setUploadTracker(true);
     if (!item) item = params.testItem;
     var files = [
       {
@@ -184,7 +189,11 @@ const CameraPreview = ({
             line={1}
             title={"SAVE & FINISH"}
             color={colors.light}
-            onPress={() => navigation.navigate("Confirm")}
+            onPress={() =>
+              editing
+                ? navigation.navigate("View All Items")
+                : navigation.navigate("Confirm")
+            }
           />
         </Modal>
       ) : (
@@ -287,6 +296,38 @@ const CameraPreview = ({
         </>
       )}
 
+      {failureModal && (
+        <>
+          <Modal style={{ zIndex: 11 }} title={"Upload failed. Retry?"}>
+            <View style={styles.children}>
+              <ModalButton
+                onPress={() => keepPicture(item, fileUri)}
+                line={2}
+                title="YES"
+              />
+              <ModalButton
+                onPress={() => {
+                  setFailureModal(false);
+                  next();
+                }}
+                color={colors.light}
+                line={2}
+                title="NO, MOVE ON"
+              />
+            </View>
+          </Modal>
+          <View
+            style={{
+              width: width,
+              height: height,
+              position: "absolute",
+              backgroundColor: "rgba(0, 0, 0, 0.4)",
+              zIndex: 10,
+            }}
+          />
+        </>
+      )}
+
       <ImageBackground
         source={{ uri: fileUri }}
         style={{
@@ -303,7 +344,12 @@ export default class CameraScreen extends React.Component {
 
   componentDidMount() {
     const item = this.context;
-    if (item) this.setState({ item: item["item"][0] });
+    if (item && item["item"]) {
+      console.log("item1", item["item"]);
+      if (item["item"][0]) this.setState({ item: item["item"][0] });
+      else this.setState({ item: item["item"], editing: "true" });
+    }
+
     //item[1] holds other options (like user, booleans, etc.)
     this.setState({ page: this.props.page });
   }
@@ -328,31 +374,8 @@ export default class CameraScreen extends React.Component {
     cameraPreview: false,
     fileUri: null,
     pageNumberModal: false,
+    editing: false,
   };
-
-  // zoomOut() {
-  //   this.setState({
-  //     zoom: this.state.zoom - 0.1 < 0 ? 0 : this.state.zoom - 0.1,
-  //   });
-  // }
-
-  // zoomIn() {
-  //   this.setState({
-  //     zoom: this.state.zoom + 0.1 > 1 ? 1 : this.state.zoom + 0.1,
-  //   });
-  // }
-
-  // setFocusDepth(depth) {
-  //   this.setState({
-  //     depth,
-  //   });
-  // }
-
-  // toggleFocus() {
-  //   this.setState({
-  //     autoFocus: this.state.autoFocus === "on" ? "off" : "on",
-  //   });
-  // }
 
   touchToFocus(event) {
     const { pageX, pageY } = event.nativeEvent;
@@ -360,28 +383,6 @@ export default class CameraScreen extends React.Component {
     const screenHeight = Dimensions.get("window").height;
     const isPortrait = screenHeight > screenWidth;
   }
-
-  //   let x = pageX / screenWidth;
-  //   let y = pageY / screenHeight;
-  //   // Coordinate transform for portrait. See autoFocusPointOfInterest in docs for more info
-  //   if (isPortrait) {
-  //     x = pageY / screenHeight;
-  //     y = -(pageX / screenWidth) + 1;
-  //   }
-
-  //   this.setState({
-  //     autoFocusPoint: {
-  //       normalized: { x, y },
-  //       drawRectPosition: { x: pageX, y: pageY },
-  //     },
-  //   });
-  // }
-
-  // setFocusDepth(depth) {
-  //   this.setState({
-  //     depth,
-  //   });
-  // }
 
   takePicture = async function () {
     if (this.camera) {
@@ -412,13 +413,6 @@ export default class CameraScreen extends React.Component {
           justifyContent: "space-between",
         }}
         type={this.state.type}
-        // flashMode={this.state.flash}
-        // autoFocus={this.state.autoFocus}
-        // autoFocusPointOfInterest={this.state.autoFocusPoint.normalized}
-        // zoom={this.state.zoom}
-        // whiteBalance={this.state.whiteBalance}
-        // ratio={this.state.ratio}
-        // focusDepth={this.state.depth}
         androidCameraPermissionOptions={{
           title: "Permission to use camera",
           message: "We need your permission to use your camera",
@@ -427,42 +421,6 @@ export default class CameraScreen extends React.Component {
         }}
         captureAudio={false}
       >
-        {/* <View style={StyleSheet.absoluteFill}>
-          <View style={[styles.autoFocusBox, drawFocusRingPosition]} />
-          <TouchableWithoutFeedback style = {{zIndex: 100}} onPress={this.touchToFocus.bind(this)}>
-            <View style={{ flex: 1 }} />
-          </TouchableWithoutFeedback>
-        </View> */}
-
-        {/* <Slider
-            style={{ width: 150, marginTop: 15, alignSelf: "flex-end" }}
-            onValueChange={this.setFocusDepth.bind(this)}
-            step={0.1}
-            disabled={this.state.autoFocus === "on"}
-          /> */}
-        {/* {this.state.zoom !== 0 && (
-            <Text style={[styles.flipText, styles.zoomText]}>
-              Zoom: {this.state.zoom}
-            </Text>
-          )} */}
-
-        {/* <TouchableOpacity
-              style={[styles.flipButton, { flex: 0.1, alignSelf: "flex-end" }]}
-              onPress={this.zoomIn.bind(this)}
-            >
-              <Text style={styles.flipText}> + </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.flipButton, { flex: 0.1, alignSelf: "flex-end" }]}
-              onPress={this.zoomOut.bind(this)}
-            >
-              <Text style={styles.flipText}> - </Text>
-            </TouchableOpacity> */}
-        {/* <SmallButton
-            style={styles.af}
-            title={"AF:" + this.state.autoFocus}
-            onPress={this.toggleFocus.bind(this)}
-          /> */}
         <SmallButton
           style={styles.snap}
           onPress={this.takePicture.bind(this)}
@@ -511,16 +469,30 @@ export default class CameraScreen extends React.Component {
             </View>
           </Modal>
         ) : null}
-        <NavigationButton
-          style={{
-            position: "absolute",
-            bottom: 30,
-            right: 30,
-            zIndex: 40,
-          }}
-          direction="right"
-          onPress={() => this.props.navigation.navigate("Confirm")}
-        />
+        {this.state.editing ? (
+          <NavigationButton
+            style={{
+              position: "absolute",
+              bottom: 30,
+              right: 30,
+              zIndex: 40,
+            }}
+            label={"Return"}
+            direction="right"
+            onPress={() => this.props.navigation.navigate("View All Items")}
+          />
+        ) : (
+          <NavigationButton
+            style={{
+              position: "absolute",
+              bottom: 30,
+              right: 30,
+              zIndex: 40,
+            }}
+            direction="right"
+            onPress={() => this.props.navigation.navigate("Confirm")}
+          />
+        )}
         <NavigationButton
           style={styles.back}
           onPress={() => this.props.navigation.goBack()}
@@ -554,6 +526,7 @@ export default class CameraScreen extends React.Component {
             setPageNumberModal={(bool) =>
               this.setState({ pageNumberModal: bool })
             }
+            editing = {this.state.editing}
           />
         ) : (
           this.renderCamera(item)
@@ -568,53 +541,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 10,
     backgroundColor: "#000",
-  },
-  flipButton: {
-    flex: 0.3,
-    height: 40,
-    marginHorizontal: 2,
-    marginBottom: 10,
-    marginTop: 10,
-    borderRadius: 8,
-    borderColor: "white",
-    borderWidth: 1,
-    padding: 5,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  autoFocusBox: {
-    position: "absolute",
-    height: 64,
-    width: 64,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "white",
-    opacity: 0.4,
-    zIndex: 100,
-  },
-  flipText: {
-    color: "white",
-    fontSize: 15,
-  },
-  zoomText: {
-    position: "absolute",
-    bottom: 70,
-    zIndex: 2,
-    left: 2,
-  },
-  text: {
-    padding: 10,
-    borderWidth: 2,
-    borderRadius: 2,
-    position: "absolute",
-    borderColor: "#F00",
-    justifyContent: "center",
-  },
-  textBlock: {
-    color: "#F00",
-    position: "absolute",
-    textAlign: "center",
-    backgroundColor: "transparent",
   },
   snap: {
     left: width / 2 - 25,

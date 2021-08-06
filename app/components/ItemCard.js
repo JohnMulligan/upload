@@ -71,7 +71,7 @@ function Card({
             properties.map(
               (prop, idx) =>
                 idx > 1 && (
-                  <View>
+                  <View key = {idx}>
                     <View style={styles.prop} key={idx}>
                       <View style={{ maxWidth: "50%" }}>
                         <Text style={{ fontSize: 18 }} weight="medium">
@@ -97,7 +97,7 @@ function Card({
             }}
             style={{ width: "100%", height: "100%", borderRadius: 10 }}
           />
-        ) : null}
+        ) : <Text style = {{color: colors.primary, fontSize: 20}}>{id}</Text>}
       </View>
     </TouchableOpacity>
   );
@@ -140,6 +140,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderColor: colors.blue,
     borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
 });
 

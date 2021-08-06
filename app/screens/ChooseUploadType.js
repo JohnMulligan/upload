@@ -24,6 +24,8 @@ import AuthContext from "../../api/auth/context";
 import ItemContext from "../../api/auth/itemContext";
 import * as SecureStore from "expo-secure-store";
 
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+
 import {
   fetchOne,
   fetchResourceTemplates,
@@ -34,33 +36,51 @@ import {
 
 const { width, height } = Dimensions.get("window");
 
-function ChooseUploadType({ navigation }) {
+function ChooseUploadType({ navigation, route }) {
   const { user, setUser } = useContext(AuthContext);
   const { item, setItem } = useContext(ItemContext);
 
-  const [selected, setSelected] = useState([false, true, false, false]);
+  var boolArr = [false, true, false, false]
+  if(route.params && route.params.item) boolArr = [false, false, true, false]
+
+  const [selected, setSelected] = useState(boolArr);
   const [singlePage, onChangeSinglePage] = useState(1);
   const [assignPage, onChangeAssignPage] = useState(1);
+  const [warning, setWarning] = useState(false);
+
+  const [id, setID] = useState(item);
+
+  useEffect(() => {
+    if (route.params && route.params.item) {
+      setItem(route.params.item);
+    }
+  });
 
   const next = () => {
     if (selected[0]) {
-      console.log("single page", singlePage);
-      //need validation
-      navigation.navigate("Upload Media", { type: 0, page: singlePage });
+      navigation.navigate("Upload Media", {
+        editing: id,
+        type: 0,
+        page: singlePage,
+      });
     } else if (selected[1]) {
-      navigation.navigate("Upload Media", { type: 1, page: 1 });
+      navigation.navigate("Upload Media", { editing: id, type: 1, page: 1 });
     } else if (selected[2]) {
       navigation.navigate("Upload Media", {
+        editing: id,
         type: 2,
         page: assignPage,
       });
     } else {
       navigation.navigate("Confirm");
     }
+    setWarning(false);
   };
 
   const back = () => {
-    navigation.navigate("Create New Item", { mode: "view" });
+    if (route.params && route.params.item) {
+      navigation.navigate("View All Items");
+    } else navigation.navigate("Create New Item", { mode: "view" });
   };
   return (
     <ItemScreen style={{ flex: 1 }} exit={() => navigation.navigate("Home")}>
@@ -74,7 +94,7 @@ function ChooseUploadType({ navigation }) {
         <Header title="Choose Upload Type" />
       </View>
       <View style={styles.body}>
-        <ScrollView style = {{flex: 1, height: height - 130}}>
+        <KeyboardAwareScrollView style={{ flex: 1, marginBottom: 80 }}>
           <Option
             onPress={() => setSelected([true, false, false, false])}
             selected={selected[0]}
@@ -144,7 +164,7 @@ function ChooseUploadType({ navigation }) {
                       flexWrap: "wrap",
                     }}
                   >
-                    Set starting page number (optional)
+                    Set page number (optional)
                   </Text>
                 </View>
                 <TextInput
@@ -171,11 +191,20 @@ function ChooseUploadType({ navigation }) {
             text="I don't want to upload any media"
             description="Finish item now. You can go back and upload more media later."
           />
-        </ScrollView>
+        </KeyboardAwareScrollView>
       </View>
+      {warning && (
+        <Modal title="Once an image upload has started, do not close the app. Otherwise, the upload will be interrupted!">
+          <View style={styles.children}>
+            <ModalButton onPress={() => next()} line={1} title="OK" />
+          </View>
+        </Modal>
+      )}
       <NavigationButton
         style={styles.next}
-        onPress={() => next()}
+        onPress={() =>
+          selected[3] ? navigation.navigate("Confirm") : setWarning(true)
+        }
         label="Next"
         direction="right"
       />
@@ -229,6 +258,11 @@ const styles = StyleSheet.create({
     width: width - 125,
     height: 50,
     left: 30,
+  },
+  children: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
   },
   back: {
     position: "absolute",

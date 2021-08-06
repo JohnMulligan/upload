@@ -36,7 +36,7 @@ function Confirm({ navigation }) {
   const [itemData, setItemData] = useState({});
   const [loading, setLoading] = useState(true);
   const insets = useSafeAreaInsets();
-
+  
   useEffect(() => {
     SecureStore.getItemAsync("host").then((host) => {
       SecureStore.getItemAsync("keys").then((keys) => {
@@ -62,22 +62,25 @@ function Confirm({ navigation }) {
       <View style={styles.body}>
         {!loading && (
           <>
-            <Text weight="medium" style={{ fontSize: 24 }}>
-              {itemData[0][1]}
-            </Text>
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("Create New Item", { mode: "edit" })
-              }
-            >
-              <Text>Edit content</Text>
-            </TouchableOpacity>
+            <View style={{ width: "100%", flexDirection: 'row', justifyContent: 'space-between', alignItems: "center" }}>
+              <Text weight="medium" style={{ fontSize: 24 }}>
+                {itemData[0][1]}
+              </Text>
+              <Button
+                onPress={() =>
+                  navigation.navigate("Create New Item", { mode: "edit" })
+                }
+                style={{ width: "20%", height: 34, padding: 5}}
+                title="Edit"
+
+              />
+            </View>
             <View>
               {itemData.map(
                 (prop, idx) =>
                   idx > 1 && (
-                    <>
-                      <View style={styles.prop} key={idx}>
+                    <View key = {idx}>
+                      <View style={styles.prop}>
                         <View style={{ maxWidth: "40%" }}>
                           <Text style={{ fontSize: 18 }} weight="medium">
                             {prop[0]}
@@ -94,10 +97,11 @@ function Confirm({ navigation }) {
                           width: "100%",
                         }}
                       />
-                    </>
+                    </View>
                   )
               )}
             </View>
+
             {/* <View>
               <Text style={{ fontSize: 24, marginTop: 20 }} weight={"medium"}>
                 Media

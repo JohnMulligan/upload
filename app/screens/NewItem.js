@@ -64,26 +64,23 @@ function NewItem({ navigation, route }) {
   const [error, setError] = useState(false);
   const insets = useSafeAreaInsets();
 
+  const [loading, setLoading] = useState(true);
+  //make authentication pathway here for keys
   useEffect(() => {
+    // let isMounted = true;
+
     if (route.params && route.params.item) {
       setItem(route.params.item["o:id"]);
     }
-  });
-  //make authentication pathway here for keys
-  useEffect(() => {
-    let isMounted = true;
+
     SecureStore.getItemAsync("host").then((host) => {
       setHost(host);
       fetchResourceTemplates(host)
-        .then((response) => {
-          if (isMounted) setResourceTemplates(response);
-        })
+        .then((response) => setResourceTemplates(response))
         .catch((error) => console.log(error));
-      return () => {
-        isMounted = false;
-      };
+      setLoading(false);
     });
-  }, []);
+  });
 
   const loadFields = async (value, idx) => {
     setError(false);

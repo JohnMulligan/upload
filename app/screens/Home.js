@@ -54,7 +54,7 @@ function Home({ navigation }) {
           upload image attachments
         </Text>
       </Card>
-      <Card
+      {/* <Card
         style={{ maxHeight: 0.2 * height, overflow: "scroll" }}
         onPress={() =>
           navigation.navigate("Create Item", { screen: "Create New Item" })
@@ -65,7 +65,8 @@ function Home({ navigation }) {
           Create a new item based on the fields of an existing item, and edit
           however you'd like.
         </Text>
-      </Card>
+      </Card> */}
+
       {/* <Card
         title="Find item/media"
         onPress={() => navigation.navigate("Find and Edit")}
@@ -74,12 +75,11 @@ function Home({ navigation }) {
       </Card> */}
       <Card
         style={{ maxHeight: 0.1 * height, overflow: "scroll" }}
-        title="View and edit existing items"
+        title="Upload images to existing items"
         onPress={() => navigation.navigate("View All Items")}
       >
         <Text style={{ fontSize: 14, color: colors.grey }}>
-          All currently uploaded items in the Omeka S database. Includes links
-          to media.
+          All currently uploaded items and media in the Omeka S database. Find an item and upload more media to it.
         </Text>
       </Card>
       <Button

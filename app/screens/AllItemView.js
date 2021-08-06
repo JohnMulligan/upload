@@ -13,6 +13,7 @@ import * as SecureStore from "expo-secure-store";
 function AllItemView({ navigation }) {
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const filterMatches = (item) => {
     // console.log(item);
@@ -39,29 +40,29 @@ function AllItemView({ navigation }) {
                   id={item["o:id"]}
                   data={item}
                   onPress={() =>
-                    // navigation.navigate("Create Item", {
-                    //   screen: "Create New Item",
-                    //   params: { item: item["o:id"] },
-                    // })
-                    navigation.navigate("Edit Item", { item: item })
+                    navigation.navigate("Create Item", {
+                      screen: "Choose Upload Type",
+                      params: { item: item["o:id"] },
+                    })
                   }
                 />
               ))
             );
+            setLoading(false);
           })
           .catch((error) => console.log("error", error));
       });
     });
   });
 
-  useEffect(() => {
-    if (search) {
-      let filtered = items.filter(filterMatches);
-      setItems(filtered);
-    } else {
-      setItems(items);
-    }
-  }, [search]);
+  // useEffect(() => {
+  //   if (search) {
+  //     let filtered = items.filter(filterMatches);
+  //     setItems(filtered);
+  //   } else {
+  //     setItems(items);
+  //   }
+  // }, [search]);
 
   return (
     <ItemScreen
@@ -74,9 +75,9 @@ function AllItemView({ navigation }) {
       }}
     >
       <View style={{ width: "100%" }}>
-        <Header style={{ paddingLeft: 10 }} title="Find and Edit" />
+        <Header style={{ paddingLeft: 10 }} title="Upload to Existing" />
       </View>
-      <ScrollView style={{ flex: 1 }}>{items}</ScrollView>
+      <ScrollView style={{ flex: 1 }}>{loading ? <Text>Loading...</Text> : items}</ScrollView>
     </ItemScreen>
   );
 }
