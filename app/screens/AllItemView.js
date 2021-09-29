@@ -22,6 +22,7 @@ function AllItemView({ navigation }) {
 
   useFocusEffect(() => {
     if (loading) {
+      setLoading(false);
       // console.log('all')
       //server-side gets items 3 times despite having the client side log 2 times
       SecureStore.getItemAsync("host").then((host) => {
@@ -30,12 +31,14 @@ function AllItemView({ navigation }) {
             (baseAddress = host),
             (endpoint = "items"),
             (sortBy = "id"),
+            (limit = 5),
             (params = {
               key_identity: keys.split(",")[0],
               key_credential: keys.split(",")[1],
             })
           )
             .then((res) => {
+              console.log(res);
               setItems(
                 res.map((item, idx) => (
                   <ItemCard
@@ -44,15 +47,13 @@ function AllItemView({ navigation }) {
                     id={item["o:id"]}
                     data={item}
                     onPress={() =>
-                      navigation.navigate("Create Item", {
-                        screen: "Choose Upload Type",
-                        params: { item: item["o:id"] },
+                      navigation.navigate("View Mode", {
+                        item: item,
                       })
                     }
                   />
                 ))
               );
-              setLoading(false);
             })
             .catch((error) => console.log("error", error));
         });

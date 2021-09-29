@@ -10,6 +10,7 @@ import {
 import Text from "./Text";
 
 import { fetchItemData, getThumbnail } from "../../api/utils/Omeka";
+import { useFocusEffect } from "@react-navigation/native";
 
 const { width, height } = Dimensions.get("window");
 
@@ -31,26 +32,6 @@ function Card({
   const [loading, setLoading] = useState(true);
   const [thumbnail, setThumbnail] = useState("");
 
-  useEffect(() => {
-    SecureStore.getItemAsync("host").then((host) => {
-      SecureStore.getItemAsync("keys").then((keys) => {
-        fetchItemData(host, "items", id, {
-          key_identity: keys.split(",")[0],
-          key_credential: keys.split(",")[1],
-        })
-          .then((res) => {
-            if (loading == true) {
-              setProperties(res);
-              setLoading(false);
-
-              getThumbnail(host, id, keys).then((res) => setThumbnail(res));
-            }
-          })
-          .catch((error) => console.log("error", error));
-      });
-    });
-  });
-
   return (
     <TouchableOpacity
       style={[styles.button, style]}
@@ -62,31 +43,6 @@ function Card({
           <Text weight="medium" style={styles.text}>
             {title}
           </Text>
-          {/* <Text weight="medium" style={styles.text}>
-            ID: {id} 
-          </Text> */}
-        </View>
-        <View>
-          {!loading &&
-            properties.map(
-              (prop, idx) =>
-                idx > 1 && (
-                  <View key = {idx}>
-                    <View style={styles.prop} key={idx}>
-                      <View style={{ maxWidth: "50%" }}>
-                        <Text style={{ fontSize: 18 }} weight="medium">
-                          {prop[0]}
-                        </Text>
-                      </View>
-                      <View style={{ maxWidth: "50%" }}>
-                        <Text style={{ fontSize: 18, maxHeight: 20 }}>
-                          {prop[1]}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                )
-            )}
         </View>
       </ScrollView>
       <View style={styles.thumbnail}>
@@ -97,7 +53,9 @@ function Card({
             }}
             style={{ width: "100%", height: "100%", borderRadius: 10 }}
           />
-        ) : <Text style = {{color: colors.primary, fontSize: 20}}>{id}</Text>}
+        ) : (
+          <Text style={{ color: colors.primary, fontSize: 20 }}>{id}</Text>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -140,8 +98,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderColor: colors.blue,
     borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center'
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

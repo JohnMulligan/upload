@@ -23,5 +23,10 @@ export default {
     color: colors.dark,
     fontSize: 16,
     fontFamily: 'Barlow_300Light'
+  },
+  italictext: {
+    color: colors.dark,
+    fontSize: 24,
+    fontFamily: 'Barlow_400Regular_Italic'
   }
 };

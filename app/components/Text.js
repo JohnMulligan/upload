@@ -1,21 +1,25 @@
-import React from 'react';
-import {Text, View} from 'react-native';
+import React from "react";
+import { Text, View } from "react-native";
 
-import defaultStyles from '../config/styles';
+import defaultStyles from "../config/styles";
 
-function AppText({children, weight, style, ...otherProps}) {
+function AppText({ children, weight, style, ...otherProps }) {
   return (
     <View>
-      {weight == 'bold' ? (
+      {weight == "bold" ? (
         <Text style={[defaultStyles.boldtext, style]} {...otherProps}>
           {children}
         </Text>
-      ) : weight == 'light' ? (
+      ) : weight == "light" ? (
         <Text style={[defaultStyles.lighttext, style]} {...otherProps}>
           {children}
         </Text>
-      ) : weight == 'medium' ? (
+      ) : weight == "medium" ? (
         <Text style={[defaultStyles.mediumtext, style]} {...otherProps}>
+          {children}
+        </Text>
+      ) : weight == "italic" ? (
+        <Text style={[defaultStyles.italictext, style]} {...otherProps}>
           {children}
         </Text>
       ) : (

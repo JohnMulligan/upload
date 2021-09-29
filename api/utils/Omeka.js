@@ -23,6 +23,7 @@ export const fetch = async (
       sort_by: sortBy,
       sort_order: sortOrder,
       page,
+      limit,
       per_page: perPage,
     },
   });
@@ -53,6 +54,7 @@ export const fetchItemData = async (
     address += `?key_identity=${params.key_identity}&key_credential=${params.key_credential}`;
   }
   const res = await axios.get(address);
+  // console.log('res gotten~');
   var data = [];
   data.push(["Title", res.data["o:title"], 1]);
   data.push(["id", id, id]);
