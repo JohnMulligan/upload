@@ -1,30 +1,49 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
-const PER_PAGE = 9999;
+const PER_PAGE = 4;
+
+export const fetchItemsFilter = async (
+  baseAddress,
+  endpoint,
+  keyword,
+  params,
+  sortBy = "id",
+  sortOrder = "asc"
+) => {
+  const res = await axios.get(`http://${baseAddress}/api/${endpoint}?fulltext_search=${keyword}`, {
+    params: {
+      ...params,
+      sort_by: sortBy,
+      sort_order: sortOrder,
+    },
+  });
+  const data = res.data.map((each) => ({
+    ...each,
+    key: each["o:id"],
+  }));
+  return data;
+}
 
 export const fetch = async (
   baseAddress,
   endpoint,
+  loadpage,
   itemSetId,
   params,
   start,
-  limit,
   sortBy = "id",
   sortOrder = "asc"
 ) => {
-  const perPage = limit + (start % limit);
-  const page = Math.ceil(start / perPage) + 1;
-
+  // console.log(baseAddress, endpoint, loadpage, itemSetId, params, start);
   const res = await axios.get(`http://${baseAddress}/api/${endpoint}`, {
     params: {
       ...params,
       item_set_id: itemSetId !== -1 ? itemSetId : null,
       sort_by: sortBy,
       sort_order: sortOrder,
-      page,
-      limit,
-      per_page: perPage,
+      page: loadpage,
+      per_page: PER_PAGE,
     },
   });
 
@@ -32,8 +51,9 @@ export const fetch = async (
     ...each,
     key: each["o:id"],
   }));
+  // console.log('data', data);
 
-  return data.slice(0, limit);
+  return data;
 };
 
 export const fetchResourceTemplates = async (baseAddress) => {
@@ -58,6 +78,7 @@ export const fetchItemData = async (
   var data = [];
   data.push(["Title", res.data["o:title"], 1]);
   data.push(["id", id, id]);
+  
   var keys = Object.keys(res.data);
   for (var i = 0; i < keys.length; i++) {
     if (
@@ -65,13 +86,16 @@ export const fetchItemData = async (
       res.data[keys[i]][0] &&
       res.data[keys[i]][0]["property_id"]
     ) {
+      // console.log('test', keys[i]);
       data.push([
         res.data[keys[i]][0]["property_label"],
         res.data[keys[i]][0]["@value"],
         res.data[keys[i]][0]["property_id"],
+        keys[i]
       ]);
     }
   }
+  // console.log('data', data)
   //returns data in a format where title and id are retrieved from user input
   //and properties are in the format of property title as key and value/property id as an array
   return data;
@@ -95,11 +119,21 @@ export const getResourceTemplate = async (baseAddress, templateId) => {
 };
 
 export const getPropertiesInResourceTemplate = (baseAddress, templateId) => {
+  // console.log(baseAddress, templateId)
   return getResourceTemplate(baseAddress, templateId).then((response) => {
     let requests = response.data["o:resource_template_property"].map(
       (property) => axios.get(property["o:property"]["@id"])
     );
     return axios.all(requests);
+  });
+};
+
+export const getProperties = (baseAddress, templateId) => {
+  return getResourceTemplate(baseAddress, templateId).then((res) => {
+    let requests = res.data["o:resource_template_property"].map(
+      (prop) => prop["o:property"]
+    );
+    return requests;
   });
 };
 

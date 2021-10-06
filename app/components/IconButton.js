@@ -8,7 +8,7 @@ import colors from "../config/colors";
 function IconButton({ label, path, selected, direction, onPress, style }) {
   return (
     <TouchableOpacity onPress = {onPress} activeOpacity={selected && 1}>
-      <Text weight = "italic" style={{ fontSize: 14, marginTop: 20 }}>{selected ? "selected" : " "}</Text>
+      <Text weight = "italic" style={{ fontSize: 14, marginTop: 20 }}>{selected ? label : " "}</Text>
       <View
         style={[
           {

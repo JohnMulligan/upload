@@ -154,6 +154,7 @@ function NewItem({ navigation, route }) {
       "o:id": templates.class,
     };
     payload["o:is_public"] = false;
+    console.log('payload', payload);
     if (!title) {
       setError(true);
     } else {

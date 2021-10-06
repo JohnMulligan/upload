@@ -38,13 +38,11 @@ function Card({
       onPress={onPress}
       {...otherProps}
     >
-      <ScrollView style={{ paddingRight: 10, width: "100%" }}>
-        <View style={styles.header}>
-          <Text weight="medium" style={styles.text}>
-            {title}
-          </Text>
-        </View>
-      </ScrollView>
+      <View style={styles.header}>
+        <Text weight="bold" style={styles.text}>
+          {title}
+        </Text>
+      </View>
       <View style={styles.thumbnail}>
         {thumbnail ? (
           <Image
@@ -63,13 +61,9 @@ function Card({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 10,
-    borderColor: colors.blue,
-    borderWidth: 2,
     width: 0.9 * width,
     marginBottom: 0.025 * height,
     height: 0.165 * height - 7.5,
-    padding: 15,
     flexDirection: "row",
   },
   children: {
@@ -79,11 +73,28 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
+    width: "65%",
+    borderBottomLeftRadius: 10,
+    borderTopLeftRadius: 10,
+    borderColor: colors.primary,
+    borderWidth: 2,
+    padding: 15,
     justifyContent: "space-between",
+    shadowColor: "#000",
+    backgroundColor: colors.light,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+
+    elevation: 5,
   },
   text: {
     color: colors.primary,
     fontSize: 22,
+    maxHeight: '60%'
   },
   prop: {
     flexDirection: "row",
@@ -93,13 +104,23 @@ const styles = StyleSheet.create({
     overflow: "scroll",
   },
   thumbnail: {
-    width: "30%",
+    width: "32.5%",
     height: "100%",
-    borderRadius: 10,
-    borderColor: colors.blue,
+    borderColor: colors.primary,
+    marginLeft: "2.5%",
     borderWidth: 2,
     justifyContent: "center",
     alignItems: "center",
+    shadowColor: "#000",
+    backgroundColor: colors.light,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+
+    elevation: 5,
   },
 });
 

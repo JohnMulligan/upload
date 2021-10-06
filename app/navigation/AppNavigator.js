@@ -5,6 +5,7 @@ import Home from "../screens/Home";
 import NewItem from "../screens/NewItem";
 import FindAndEdit from "../screens/FindAndEdit";
 
+import ItemView from "../screens/ItemView";
 import ViewMode from "../screens/ViewMode";
 import EditMode from "../screens/EditMode";
 import CopyMode from "../screens/CopyMode";
@@ -22,11 +23,10 @@ function AppNavigator() {
       <Stack.Screen name="Create Item" component={CreateItemNavigator} />
       <Stack.Screen name="Edit Item" component={FindAndEdit} />
       <Stack.Screen name="View All Items" component={AllItemView} />
+      <Stack.Screen name="Item View" component={ItemView} />
       <Stack.Screen name="View Mode" component={ViewMode} />
       <Stack.Screen name="Edit Mode" component={EditMode} />
       <Stack.Screen name="Copy Mode" component={CopyMode} />
-
-
     </Stack.Navigator>
   );
 }
