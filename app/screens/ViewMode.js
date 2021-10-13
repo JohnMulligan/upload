@@ -7,6 +7,7 @@ import Header from "../components/Header";
 import IconButton from "../components/IconButton";
 import Text from "../components/Text";
 import { fetchItemData, getThumbnail } from "../../api/utils/Omeka";
+import axios from "axios";
 
 import * as SecureStore from "expo-secure-store";
 
@@ -18,10 +19,15 @@ function ViewMode({ navigation, item, switchMode }) {
   const [loading, setLoading] = useState(true);
   const [fields, setFields] = useState([]);
 
+  const [host, setHost] = useState();
+  const [keys, setKeys] = useState();
+
   useEffect(() => {
     // console.log(route.params.item);
     SecureStore.getItemAsync("host").then((host) => {
+      setHost(host);
       SecureStore.getItemAsync("keys").then((keys) => {
+        setKeys(keys);
         fetchItemData(host, "items", item["o:id"], {
           key_identity: keys.split(",")[0],
           key_credential: keys.split(",")[1],
@@ -38,6 +44,20 @@ function ViewMode({ navigation, item, switchMode }) {
     });
   });
 
+  // const deleteItem = () => {
+  //   console.log(`http://${host}/api/items/${item["o:id"]}?key_identity=${
+  //         keys.split(",")[0]
+  //       }&key_credential=${keys.split(",")[1]}`)
+  //   axios
+  //     .delete(
+  //       `http://${host}/api/items/${item["o:id"]}?key_identity=${
+  //         keys.split(",")[0]
+  //       }&key_credential=${keys.split(",")[1]}`
+  //     )
+  //     .then((res) => console.log("res", res))
+  //     .catch(err => console.log(err))
+  // };
+
   return (
     <View
       style={{ flex: 1, backgroundColor: colors.light }}
@@ -50,19 +70,31 @@ function ViewMode({ navigation, item, switchMode }) {
       <View
         style={{
           marginTop: 50,
-          width: "85%",
+          width: "80%",
         }}
       >
-        <Text weight="italic" style={{ textAlign: "center" }}>
-          Viewing
-        </Text>
-        <Text
-          weight="bold"
-          style={{ textAlign: "center", fontSize: 28, marginBottom: 15 }}
-        >
-          {item["o:title"]}
-        </Text>
-        <ScrollView style={{ height: "80%" }}>
+        <View style={{ flexDirection: "row", justifyContent: 'center', left: 25 }}>
+          <View>
+            <Text weight="italic" style={{ textAlign: "center" }}>
+              Viewing
+            </Text>
+            <Text
+              weight="bold"
+              style={{ textAlign: "center", fontSize: 28, marginBottom: 15 }}
+            >
+              {item["o:title"]}
+            </Text>
+          </View>
+          <View>
+            <IconButton
+              label="edit"
+              onPress={() => switchMode("edit")}
+              borderColor={colors.light}
+              style={{ alignItems: "flex-end" }}
+            />
+          </View>
+        </View>
+        <ScrollView style={{ height: "75%" }}>
           {loading ? (
             <Text>Loading fields...</Text>
           ) : (
@@ -71,7 +103,12 @@ function ViewMode({ navigation, item, switchMode }) {
                 (prop, idx) =>
                   idx > 1 &&
                   prop[0] != "Title" && (
-                    <View style = {{flexDirection: 'row', justifyContent: 'space-between'}}>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                      }}
+                    >
                       <View style={{ marginVertical: 7.5 }} key={idx}>
                         <Text
                           style={{ fontSize: 18, marginBottom: 2 }}
@@ -81,16 +118,10 @@ function ViewMode({ navigation, item, switchMode }) {
                         </Text>
                         <Text style={{ fontSize: 20 }}>{prop[1]}</Text>
                       </View>
-                      {idx == 3 && (
-                        <IconButton
-                          label="edit"
-                          onPress={() => switchMode("edit")}
-                          borderColor={colors.light}
-                        />
-                      )}
                     </View>
                   )
               )}
+              {/* <Button title="DELETE" onPress={() => deleteItem()} /> */}
             </>
           )}
         </ScrollView>

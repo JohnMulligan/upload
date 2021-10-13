@@ -142,7 +142,12 @@ function CopyMode({ navigation, item }) {
             }&key_credential=${keys.split(",")[1]}`,
             payload
           )
-          .then((res) => console.log("res", res["data"]))
+          .then((res) =>
+            navigation.navigate("Create Item", {
+              screen: "Choose Upload Type",
+              params: { item: res["o:id"] },
+            })
+          )
           .catch((error) => console.log(error));
       })
       .catch((error) => console.log("credentials failed", error));
@@ -172,7 +177,10 @@ function CopyMode({ navigation, item }) {
           {item["o:title"]}
         </Text>
         {loading ? (
-          <Text>Loading fields...</Text>
+          <Text>
+            Copying from this item is disabled... Please select a resource
+            template for this item to continue.
+          </Text>
         ) : (
           <KeyboardAwareScrollView style={{ height: height - 130 }}>
             <View>

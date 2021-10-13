@@ -27,13 +27,13 @@ function ImageMode({ navigation, item, switchMode }) {
         setHost(host);
         SecureStore.getItemAsync("keys").then((keys) => {
           setKeys(keys);
-          // getMedia(host, item["o:id"], keys)
-          //   .then((res) => {
-          //     console.log('res', res)
-          //     setMedia(res);
-          //     // setLoading(false);
-          //   })
-          //   .catch((error) => console.log("focus error", error));
+          getMedia(host, item["o:id"], keys)
+            .then((res) => {
+              console.log('media', res)
+              // setMedia(res);
+              // setLoading(false);
+            })
+            .catch((error) => console.log("focus error", error));
           setLoading(false);
         });
       });

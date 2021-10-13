@@ -33,10 +33,14 @@ function Card({
   const [loading, setLoading] = useState(true);
   const [thumbnail, setThumbnail] = useState("");
 
-  useFocusEffect(() => {
-    getThumbnail(baseAddress, id, keys)
-      .then((res) => setThumbnail(res))
-      .catch((err) => console.log("err", err));
+  useEffect(() => {
+    SecureStore.getItemAsync("host").then((host) => {
+      SecureStore.getItemAsync("keys").then((keys) => {
+        if (loading == true) {
+          getThumbnail(host, id, keys).then((res) => setThumbnail(res));
+        }
+      });
+    });
   });
 
   return (
@@ -56,7 +60,7 @@ function Card({
             source={{
               uri: thumbnail,
             }}
-            style={{ width: "100%", height: "100%", borderRadius: 10 }}
+            style={{ width: "100%", height: "100%" }}
           />
         ) : (
           <Text style={{ color: colors.primary, fontSize: 20 }}>{id}</Text>

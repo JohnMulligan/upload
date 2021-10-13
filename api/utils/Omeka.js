@@ -6,20 +6,16 @@ const PER_PAGE = 4;
 export const fetchItemsFilter = async (
   baseAddress,
   endpoint,
+  keys,
   keyword,
   params,
   sortBy = "id",
   sortOrder = "asc"
 ) => {
   const res = await axios.get(
-    `http://${baseAddress}/api/${endpoint}?fulltext_search=${keyword}`,
-    {
-      params: {
-        ...params,
-        sort_by: sortBy,
-        sort_order: sortOrder,
-      },
-    }
+    `http://${baseAddress}/api/${endpoint}?fulltext_search=${keyword}&key_identity=${
+      keys.split(",")[0]
+    }&key_credential=${keys.split(",")[1]}`
   );
   const data = res.data.map((each) => ({
     ...each,
@@ -202,17 +198,23 @@ export const getMedia = async (baseAddress, id, keys) => {
     .get(
       `http://${baseAddress}/api/items/${id}?key_identity=${
         keys.split(",")[0]
-      }&key_credential=${keys.split(",")[1]}`
+      }&key_credential=${keys.split(",")[1]}`,
+      { params: { page: 1, per_page: 10 } }
     )
     .then((res) => {
-      res.data["o:media"].map((med, ix) => {
+      // console.log("media", res.data["o:media"]);
+      res.data["o:media"].map((med, idx) => {
         getImage(baseAddress, med["o:id"], keys)
-          .then((res) => {
-            console.log("media");
-            media_urls.push(res);
+          .then((reso) => {
+            // console.log("images", reso);
+            media_urls.push(reso);
+            // console.log("murl", media_urls);
+            if (idx + 1 == res.data["o:media"].length) {
+              console.log("m", media_urls);
+              return media_urls;
+            }
           })
           .catch((err) => console.log(err));
       });
-      return media_urls;
     });
 };

@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, Image, Text, Platform, ScrollView } from "react-native";
+import {
+  View,
+  Image,
+  Text,
+  Platform,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import Button from "../components/Button";
 import NavigationButton from "../components/NavigationButton";
 
@@ -74,7 +81,7 @@ function AllItemView({ navigation }) {
   }, [page]);
 
   const loadPage = (inc) => {
-    setPage(page + inc);
+    if(page+inc != 0) setPage(page + inc);
   };
 
   useFocusEffect(() => {
@@ -122,38 +129,42 @@ function AllItemView({ navigation }) {
   });
 
   const search = () => {
-    SecureStore.getItemAsync("host").then((host) => {
-      SecureStore.getItemAsync("keys").then((keys) => {
-        fetchItemsFilter(
-          host,
-          "items",
-          keyword,
-          (params = {
-            key_identity: keys.split(",")[0],
-            key_credential: keys.split(",")[1],
-          })
-        )
-          .then((res) => {
-            console.log("res", res);
-            setFilteredSearches(
-              res.map((item, idx) => (
-                <ItemCard
-                  key={idx}
-                  title={item["o:title"]}
-                  id={item["o:id"]}
-                  data={item}
-                  onPress={() =>
-                    navigation.navigate("Item View", {
-                      item: item,
-                    })
-                  }
-                />
-              ))
-            );
-          })
-          .catch((error) => console.log("error", error));
+    if (keyword != "") {
+      SecureStore.getItemAsync("host").then((host) => {
+        SecureStore.getItemAsync("keys").then((keys) => {
+          fetchItemsFilter(
+            host,
+            "items",
+            keys,
+            keyword,
+          )
+            .then((res) => {
+              console.log("res", res);
+              setFilteredSearches(
+                res.map((item, idx) => (
+                  <ItemCard
+                    key={idx}
+                    title={item["o:title"]}
+                    id={item["o:id"]}
+                    data={item}
+                    onPress={() =>
+                      navigation.navigate("Item View", {
+                        item: item,
+                      })
+                    }
+                  />
+                ))
+              );
+            })
+            .catch((error) => console.log("error", error));
+        });
       });
-    });
+    }
+  };
+
+  const reset = () => {
+    setKeyWord("");
+    setFilteredSearches(null);
   };
 
   return (
@@ -174,17 +185,26 @@ function AllItemView({ navigation }) {
           flexDirection: "row",
           justifyContent: "center",
           alignItems: "center",
+          marginBottom: 10,
         }}
       >
         <TextInput
+          value={keyword}
           onChangeText={(newval) => setKeyWord(newval)}
-          style={{ width: "75%" }}
+          style={{ width: "87%" }}
         />
-        <Button
-          style={{ width: "25%", height: 40, padding: 0, marginBottom: 20 }}
-          title="search"
-          onPress={() => search()}
-        />
+        <TouchableOpacity onPress={() => reset()}>
+          <Image
+            source={require("../config/Icons/close.png")}
+            style={{ width: 15, height: 15, right: 30, bottom: 2 }}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity style={{ right: 5 }} onPress={() => search()}>
+          <Image
+            source={require("../config/Icons/search.png")}
+            style={{ width: 25, height: 25 }}
+          />
+        </TouchableOpacity>
       </View>
       <ScrollView style={{ flex: 1 }}>
         {loading ? (

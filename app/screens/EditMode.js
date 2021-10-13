@@ -48,14 +48,13 @@ function EditMode({ navigation, item }) {
   const [templateSelected, setTemplateSelected] = useState("hi");
   const [resourceTemplates, setResourceTemplates] = useState([]);
   const [userDefinedFields, setUserDefinedFields] = useState({});
-
+  const [warning, setWarning] = useState();
   useEffect(() => {
     itemValues = {};
     //if there is no assigned resource_template, the page should not load and
     //a warning should indicate that the user needs to go to Omeka and add a template
     //before being able to edit this item.
-    if (!item["o:resource_template"])
-      console.log("Please select a resource template for this item to edit.");
+    if (!item["o:resource_template"]) setWarning("Editing disabled. Please select a resource template for this item to edit.")
     else
       SecureStore.getItemAsync("host").then((host) => {
         setHost(host);
@@ -172,7 +171,7 @@ function EditMode({ navigation, item }) {
           {item["o:title"]}
         </Text>
         {loading ? (
-          <Text>Loading fields...</Text>
+          <Text>Editing disabled...Please select a resource template for this class to continue.</Text>
         ) : (
           <KeyboardAwareScrollView style={{ height: height - 130 }}>
             <View>

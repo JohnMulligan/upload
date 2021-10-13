@@ -15,7 +15,7 @@ function IconButton({
   borderColor,
 }) {
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={selected && 1}>
+    <TouchableOpacity style = {style} onPress={onPress} activeOpacity={selected && 1}>
       <Text weight="italic" style={{ fontSize: 14 }}>
         {selected ? label : " "}
       </Text>
