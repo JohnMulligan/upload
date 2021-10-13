@@ -11,19 +11,22 @@ export const fetchItemsFilter = async (
   sortBy = "id",
   sortOrder = "asc"
 ) => {
-  const res = await axios.get(`http://${baseAddress}/api/${endpoint}?fulltext_search=${keyword}`, {
-    params: {
-      ...params,
-      sort_by: sortBy,
-      sort_order: sortOrder,
-    },
-  });
+  const res = await axios.get(
+    `http://${baseAddress}/api/${endpoint}?fulltext_search=${keyword}`,
+    {
+      params: {
+        ...params,
+        sort_by: sortBy,
+        sort_order: sortOrder,
+      },
+    }
+  );
   const data = res.data.map((each) => ({
     ...each,
     key: each["o:id"],
   }));
   return data;
-}
+};
 
 export const fetch = async (
   baseAddress,
@@ -78,7 +81,7 @@ export const fetchItemData = async (
   var data = [];
   data.push(["Title", res.data["o:title"], 1]);
   data.push(["id", id, id]);
-  
+
   var keys = Object.keys(res.data);
   for (var i = 0; i < keys.length; i++) {
     if (
@@ -91,7 +94,7 @@ export const fetchItemData = async (
         res.data[keys[i]][0]["property_label"],
         res.data[keys[i]][0]["@value"],
         res.data[keys[i]][0]["property_id"],
-        keys[i]
+        keys[i],
       ]);
     }
   }
@@ -179,4 +182,37 @@ export const getThumbnail = async (baseAddress, id, keys) => {
     }&key_credential=${keys.split(",")[1]}`
   );
   return res.data["thumbnail_display_urls"]["square"];
+};
+
+export const getImage = async (baseAddress, id, keys) => {
+  console.log("id", id);
+  const res = await axios.get(
+    `http://${baseAddress}/api/media/${id}?key_identity=${
+      keys.split(",")[0]
+    }&key_credential=${keys.split(",")[1]}`
+  );
+  // console.log("hi", res.data["o:thumbnail_urls"]["square"]);
+  return res.data["o:thumbnail_urls"]["square"];
+};
+
+export const getMedia = async (baseAddress, id, keys) => {
+  let media_urls = [];
+
+  axios
+    .get(
+      `http://${baseAddress}/api/items/${id}?key_identity=${
+        keys.split(",")[0]
+      }&key_credential=${keys.split(",")[1]}`
+    )
+    .then((res) => {
+      res.data["o:media"].map((med, ix) => {
+        getImage(baseAddress, med["o:id"], keys)
+          .then((res) => {
+            console.log("media");
+            media_urls.push(res);
+          })
+          .catch((err) => console.log(err));
+      });
+      return media_urls;
+    });
 };

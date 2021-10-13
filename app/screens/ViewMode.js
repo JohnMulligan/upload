@@ -12,7 +12,7 @@ import * as SecureStore from "expo-secure-store";
 
 import colors from "../config/colors";
 
-function ViewMode({ navigation, item }) {
+function ViewMode({ navigation, item, switchMode }) {
   const [properties, setProperties] = useState({});
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -58,7 +58,7 @@ function ViewMode({ navigation, item }) {
         </Text>
         <Text
           weight="bold"
-          style={{ textAlign: "center", fontSize: 28, marginBottom: 20 }}
+          style={{ textAlign: "center", fontSize: 28, marginBottom: 15 }}
         >
           {item["o:title"]}
         </Text>
@@ -66,21 +66,32 @@ function ViewMode({ navigation, item }) {
           {loading ? (
             <Text>Loading fields...</Text>
           ) : (
-            properties.map(
-              (prop, idx) =>
-                idx > 1 &&
-                prop[0] != "Title" && (
-                  <View style={{ marginVertical: 7.5 }} key={idx}>
-                    <Text
-                      style={{ fontSize: 18, marginBottom: 2 }}
-                      weight="bold"
-                    >
-                      {prop[0]}
-                    </Text>
-                    <Text style={{ fontSize: 20 }}>{prop[1]}</Text>
-                  </View>
-                )
-            )
+            <>
+              {properties.map(
+                (prop, idx) =>
+                  idx > 1 &&
+                  prop[0] != "Title" && (
+                    <View style = {{flexDirection: 'row', justifyContent: 'space-between'}}>
+                      <View style={{ marginVertical: 7.5 }} key={idx}>
+                        <Text
+                          style={{ fontSize: 18, marginBottom: 2 }}
+                          weight="bold"
+                        >
+                          {prop[0]}
+                        </Text>
+                        <Text style={{ fontSize: 20 }}>{prop[1]}</Text>
+                      </View>
+                      {idx == 3 && (
+                        <IconButton
+                          label="edit"
+                          onPress={() => switchMode("edit")}
+                          borderColor={colors.light}
+                        />
+                      )}
+                    </View>
+                  )
+              )}
+            </>
           )}
         </ScrollView>
       </View>

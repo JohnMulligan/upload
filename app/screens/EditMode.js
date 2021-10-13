@@ -200,7 +200,7 @@ function EditMode({ navigation, item }) {
                   marginBottom: 50,
                 }}
               >
-                <Button onPress={() => createItem()} title="EDIT" />
+                <Button onPress={() => createItem()} title="SAVE CHANGES" />
               </View>
             </View>
           </KeyboardAwareScrollView>

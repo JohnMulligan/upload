@@ -40,8 +40,8 @@ function ChooseUploadType({ navigation, route }) {
   const { user, setUser } = useContext(AuthContext);
   const { item, setItem } = useContext(ItemContext);
 
-  var boolArr = [false, true, false, false]
-  if(route.params && route.params.item) boolArr = [false, false, true, false]
+  var boolArr = [false, true, false, false];
+  if (route.params && route.params.item) boolArr = [false, false, true, false];
 
   const [selected, setSelected] = useState(boolArr);
   const [singlePage, onChangeSinglePage] = useState(1);
@@ -83,7 +83,7 @@ function ChooseUploadType({ navigation, route }) {
     } else navigation.navigate("Create New Item", { mode: "view" });
   };
   return (
-    <ItemScreen style={{ flex: 1 }} exit={() => navigation.navigate("Home")}>
+    <ItemScreen style={{ flex: 1 }} exit={() => navigation.goBack()}>
       <View
         style={{
           flexDirection: "row",

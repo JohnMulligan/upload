@@ -20,6 +20,7 @@ import * as SecureStore from "expo-secure-store";
 function Card({
   title,
   id,
+  keys,
   data,
   baseAddress,
   onPress,
@@ -31,6 +32,12 @@ function Card({
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [thumbnail, setThumbnail] = useState("");
+
+  useFocusEffect(() => {
+    getThumbnail(baseAddress, id, keys)
+      .then((res) => setThumbnail(res))
+      .catch((err) => console.log("err", err));
+  });
 
   return (
     <TouchableOpacity
@@ -94,7 +101,7 @@ const styles = StyleSheet.create({
   text: {
     color: colors.primary,
     fontSize: 22,
-    maxHeight: '60%'
+    maxHeight: "60%",
   },
   prop: {
     flexDirection: "row",

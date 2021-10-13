@@ -34,36 +34,47 @@ function AllItemView({ navigation }) {
     // console.log(item);
   };
 
+  useEffect(() => {
+    console.log("effect");
+    SecureStore.getItemAsync("host").then((host) => {
+      SecureStore.getItemAsync("keys").then((keys) => {
+        fetch(
+          (baseAddress = host),
+          (endpoint = "items"),
+          (loadpage = page),
+          (itemSetId = -1),
+          (params = {
+            key_identity: keys.split(",")[0],
+            key_credential: keys.split(",")[1],
+          }),
+          (start = 1)
+        )
+          .then((res) => {
+            setTitles(res.map((item, idx) => item));
+            setItems(
+              res.map((item, idx) => (
+                <ItemCard
+                  key={idx}
+                  keys={keys}
+                  title={item["o:title"]}
+                  id={item["o:id"]}
+                  data={item}
+                  onPress={() =>
+                    navigation.navigate("Item View", {
+                      item: item,
+                    })
+                  }
+                />
+              ))
+            );
+          })
+          .catch((error) => console.log("error", error));
+      });
+    });
+  }, [page]);
+
   const loadPage = (inc) => {
     setPage(page + inc);
-    fetch(
-      (baseAddress = host),
-      (endpoint = "items"),
-      (loadpage = page),
-      (itemSetId = -1),
-      (params = keys),
-      (start = 1)
-    )
-      .then((res) => {
-        // console.log(res);
-        setTitles(res.map((item, idx) => item));
-        setItems(
-          res.map((item, idx) => (
-            <ItemCard
-              key={idx}
-              title={item["o:title"]}
-              id={item["o:id"]}
-              data={item}
-              onPress={() =>
-                navigation.navigate("Item View", {
-                  item: item,
-                })
-              }
-            />
-          ))
-        );
-      })
-      .catch((error) => console.log("error", error));
   };
 
   useFocusEffect(() => {
@@ -73,10 +84,6 @@ function AllItemView({ navigation }) {
       SecureStore.getItemAsync("host").then((host) => {
         setHost(host);
         SecureStore.getItemAsync("keys").then((keys) => {
-          setKeys({
-            key_identity: keys.split(",")[0],
-            key_credential: keys.split(",")[1],
-          });
           fetch(
             (baseAddress = host),
             (endpoint = "items"),
@@ -108,7 +115,7 @@ function AllItemView({ navigation }) {
                 ))
               );
             })
-            .catch((error) => console.log("error", error));
+            .catch((error) => console.log("focus error", error));
         });
       });
     }
@@ -127,6 +134,7 @@ function AllItemView({ navigation }) {
           })
         )
           .then((res) => {
+            console.log("res", res);
             setFilteredSearches(
               res.map((item, idx) => (
                 <ItemCard
@@ -187,7 +195,13 @@ function AllItemView({ navigation }) {
           items
         )}
       </ScrollView>
-      <View style={{ flexDirection: "row", width: '100%', justifyContent: "space-between" }}>
+      <View
+        style={{
+          flexDirection: "row",
+          width: "100%",
+          justifyContent: "space-between",
+        }}
+      >
         <NavigationButton direction={"left"} onPress={() => loadPage(-1)} />
         <NavigationButton onPress={() => loadPage(1)} />
       </View>

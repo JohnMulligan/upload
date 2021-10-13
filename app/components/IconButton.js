@@ -5,10 +5,20 @@ import Icon from "./Icon";
 
 import colors from "../config/colors";
 
-function IconButton({ label, path, selected, direction, onPress, style }) {
+function IconButton({
+  label,
+  path,
+  selected,
+  direction,
+  onPress,
+  style,
+  borderColor,
+}) {
   return (
-    <TouchableOpacity onPress = {onPress} activeOpacity={selected && 1}>
-      <Text weight = "italic" style={{ fontSize: 14, marginTop: 20 }}>{selected ? label : " "}</Text>
+    <TouchableOpacity onPress={onPress} activeOpacity={selected && 1}>
+      <Text weight="italic" style={{ fontSize: 14 }}>
+        {selected ? label : " "}
+      </Text>
       <View
         style={[
           {
@@ -21,6 +31,7 @@ function IconButton({ label, path, selected, direction, onPress, style }) {
           selected
             ? { backgroundColor: colors.primary }
             : { borderWidth: 2, borderColor: colors.primary },
+          borderColor && { borderColor: borderColor },
         ]}
       >
         <Image
@@ -28,6 +39,8 @@ function IconButton({ label, path, selected, direction, onPress, style }) {
           source={
             label == "copy"
               ? require("../config/Icons/copy.png")
+              : label == "image"
+              ? require("../config/Icons/add-image.png")
               : label == "edit"
               ? require("../config/Icons/edit.png")
               : require("../config/Icons/view.png")
