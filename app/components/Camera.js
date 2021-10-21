@@ -57,7 +57,7 @@ const CameraPreview = ({
   };
 
   const uploadImage = (item, fileUri, files) => {
-    console.log(item, fileUri, files);
+    console.log("upload", item, fileUri, files);
     const uploadBegin = (response) => {
       var jobId = response.jobId;
       console.log("UPLOAD HAS BEGUN! JobId: " + jobId);

@@ -9,13 +9,13 @@ export const fetchItemsFilter = async (
   keys,
   keyword,
   params,
-  sortBy = "id",
+  sortBy = "o:modified",
   sortOrder = "asc"
 ) => {
   const res = await axios.get(
     `http://${baseAddress}/api/${endpoint}?fulltext_search=${keyword}&key_identity=${
       keys.split(",")[0]
-    }&key_credential=${keys.split(",")[1]}`
+    }&key_credential=${keys.split(",")[1]}&sort_by=o:modified`
   );
   const data = res.data.map((each) => ({
     ...each,
@@ -192,29 +192,11 @@ export const getImage = async (baseAddress, id, keys) => {
 };
 
 export const getMedia = async (baseAddress, id, keys) => {
-  let media_urls = [];
-
-  axios
-    .get(
-      `http://${baseAddress}/api/items/${id}?key_identity=${
-        keys.split(",")[0]
-      }&key_credential=${keys.split(",")[1]}`,
-      { params: { page: 1, per_page: 10 } }
-    )
-    .then((res) => {
-      // console.log("media", res.data["o:media"]);
-      res.data["o:media"].map((med, idx) => {
-        getImage(baseAddress, med["o:id"], keys)
-          .then((reso) => {
-            // console.log("images", reso);
-            media_urls.push(reso);
-            // console.log("murl", media_urls);
-            if (idx + 1 == res.data["o:media"].length) {
-              console.log("m", media_urls);
-              return media_urls;
-            }
-          })
-          .catch((err) => console.log(err));
-      });
-    });
+  const res = await axios.get(
+    `http://${baseAddress}/api/items/${id}?key_identity=${
+      keys.split(",")[0]
+    }&key_credential=${keys.split(",")[1]}`,
+    { params: { page: 1, per_page: 10 } }
+  );
+  return res.data["o:media"];
 };

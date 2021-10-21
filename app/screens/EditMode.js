@@ -16,6 +16,8 @@ import Text from "../components/Text";
 import TextInput from "../components/TextInput";
 import { fetchItemData, getThumbnail } from "../../api/utils/Omeka";
 import RNPickerSelect from "react-native-picker-select";
+import Modal from "../components/Modal";
+import ModalButton from "../components/ModalButton";
 
 import * as axios from "axios";
 import { Formik, useFormikContext } from "formik";
@@ -37,7 +39,7 @@ import {
 
 const { width, height } = Dimensions.get("window");
 
-function EditMode({ navigation, item }) {
+function EditMode({ navigation, item, switchMode }) {
   const [properties, setProperties] = useState([]);
   const [propertyTerms, setPropertyTerms] = useState([]);
   const [host, setHost] = useState(null);
@@ -48,13 +50,19 @@ function EditMode({ navigation, item }) {
   const [templateSelected, setTemplateSelected] = useState("hi");
   const [resourceTemplates, setResourceTemplates] = useState([]);
   const [userDefinedFields, setUserDefinedFields] = useState({});
+
+  const [modal, setModal] = useState(false);
+
   const [warning, setWarning] = useState();
   useEffect(() => {
     itemValues = {};
     //if there is no assigned resource_template, the page should not load and
     //a warning should indicate that the user needs to go to Omeka and add a template
     //before being able to edit this item.
-    if (!item["o:resource_template"]) setWarning("Editing disabled. Please select a resource template for this item to edit.")
+    if (!item["o:resource_template"])
+      setWarning(
+        "Editing disabled. Please select a resource template for this item to edit."
+      );
     else
       SecureStore.getItemAsync("host").then((host) => {
         setHost(host);
@@ -141,7 +149,7 @@ function EditMode({ navigation, item }) {
             }&key_credential=${keys.split(",")[1]}`,
             payload
           )
-          .then((res) => console.log("res", res["data"]))
+          .then((res) => setModal(true))
           .catch((error) => console.log(error));
       })
       .catch((error) => console.log("credentials failed", error));
@@ -171,7 +179,10 @@ function EditMode({ navigation, item }) {
           {item["o:title"]}
         </Text>
         {loading ? (
-          <Text>Editing disabled...Please select a resource template for this class to continue.</Text>
+          <Text>
+            Editing disabled...Please select a resource template for this class
+            to continue.
+          </Text>
         ) : (
           <KeyboardAwareScrollView style={{ height: height - 130 }}>
             <View>
@@ -205,6 +216,26 @@ function EditMode({ navigation, item }) {
           </KeyboardAwareScrollView>
         )}
       </View>
+      {modal && (
+        <>
+          <Modal title="Item modified!">
+            <View style={styles.children}>
+              <ModalButton
+                onPress={() => switchMode("image")}
+                line={2}
+                title="UPLOAD MEDIA"
+              />
+              <ModalButton
+                onPress={() => navigation.goBack()}
+                color={colors.light}
+                line={2}
+                title="EXIT"
+              />
+            </View>
+          </Modal>
+          <View style={styles.shadow} />
+        </>
+      )}
     </View>
   );
 }
@@ -235,19 +266,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
-  },
-  shadow: {
-    position: "absolute",
-    top: 0,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    width: width,
-    height: height,
-    backgroundColor: colors.shadow,
-    zIndex: 9,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "15%",
   },
   next: {
     position: "absolute",

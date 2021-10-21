@@ -16,6 +16,8 @@ import Text from "../components/Text";
 import TextInput from "../components/TextInput";
 import { fetchItemData, getThumbnail } from "../../api/utils/Omeka";
 import RNPickerSelect from "react-native-picker-select";
+import Modal from "../components/Modal";
+import ModalButton from "../components/ModalButton";
 
 import * as axios from "axios";
 import { Formik, useFormikContext } from "formik";
@@ -37,7 +39,7 @@ import {
 
 const { width, height } = Dimensions.get("window");
 
-function CopyMode({ navigation, item }) {
+function CopyMode({ navigation, item, switchMode }) {
   const [properties, setProperties] = useState([]);
   const [propertyTerms, setPropertyTerms] = useState([]);
   const [host, setHost] = useState(null);
@@ -48,6 +50,13 @@ function CopyMode({ navigation, item }) {
   const [templateSelected, setTemplateSelected] = useState("hi");
   const [resourceTemplates, setResourceTemplates] = useState([]);
   const [userDefinedFields, setUserDefinedFields] = useState({});
+  const [modal, setModal] = useState(false);
+  const [copyId, setCopyId] = useState();
+
+  /*navigation.navigate("Create Item", {
+              screen: "Choose Upload Type",
+              params: { item: res["o:id"] },
+            })*/
 
   useEffect(() => {
     itemValues = {};
@@ -62,7 +71,7 @@ function CopyMode({ navigation, item }) {
         SecureStore.getItemAsync("keys").then((keys) => {
           //this gets the titles ("o:label") of each field in the resource template
           //and sets it to properties
-          console.log(item["o:id"]);
+          // console.log(item["o:id"]);
           fetchItemData(host, "items", item["o:id"], {
             key_identity: keys.split(",")[0],
             key_credential: keys.split(",")[1],
@@ -104,8 +113,11 @@ function CopyMode({ navigation, item }) {
     // console.log(idx, value, properties);
   };
 
+  const moveOn = (res) => {
+    setCopyId(res);
+    setModal(true);
+  };
   const createItem = () => {
-    console.log("hi");
     let payload = {};
     let title = properties["Title"][1];
     let v = Object.values(properties).map(
@@ -122,7 +134,7 @@ function CopyMode({ navigation, item }) {
           },
         ])
     );
-    console.log(payload);
+    // console.log(payload);
     //hardcoded...but what if they use a different title term?
     payload["dcterms:title"] = [
       {
@@ -142,12 +154,10 @@ function CopyMode({ navigation, item }) {
             }&key_credential=${keys.split(",")[1]}`,
             payload
           )
-          .then((res) =>
-            navigation.navigate("Create Item", {
-              screen: "Choose Upload Type",
-              params: { item: res["o:id"] },
-            })
-          )
+          .then((res) => {
+            // console.log("res", res.data);
+            moveOn(res.data["o:id"]);
+          })
           .catch((error) => console.log(error));
       })
       .catch((error) => console.log("credentials failed", error));
@@ -214,6 +224,32 @@ function CopyMode({ navigation, item }) {
           </KeyboardAwareScrollView>
         )}
       </View>
+      {modal && (
+        <>
+          <Modal title="Item modified!">
+            <View style={styles.children}>
+              <ModalButton
+                onPress={() => {
+                  // console.log("hi", copyId);
+                  navigation.navigate("Create Item", {
+                    screen: "Choose Upload Type",
+                    params: { item: copyId },
+                  });
+                }}
+                line={2}
+                title="UPLOAD MEDIA"
+              />
+              <ModalButton
+                onPress={() => navigation.goBack()}
+                color={colors.light}
+                line={2}
+                title="EXIT"
+              />
+            </View>
+          </Modal>
+          <View style={styles.shadow} />
+        </>
+      )}
     </View>
   );
 }
@@ -245,19 +281,19 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: "100%",
   },
-  shadow: {
-    position: "absolute",
-    top: 0,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    width: width,
-    height: height,
-    backgroundColor: colors.shadow,
-    zIndex: 9,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "15%",
-  },
+  // shadow: {
+  //   position: "absolute",
+  //   top: 0,
+  //   borderTopLeftRadius: 30,
+  //   borderTopRightRadius: 30,
+  //   width: width,
+  //   height: height,
+  //   backgroundColor: colors.shadow,
+  //   zIndex: 9,
+  //   justifyContent: "center",
+  //   alignItems: "center",
+  //   padding: "15%",
+  // },
   next: {
     position: "absolute",
   },

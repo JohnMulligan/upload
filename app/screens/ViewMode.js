@@ -70,28 +70,29 @@ function ViewMode({ navigation, item, switchMode }) {
       <View
         style={{
           marginTop: 50,
-          width: "80%",
+          width: "85%",
         }}
       >
-        <View style={{ flexDirection: "row", justifyContent: 'center', left: 25 }}>
+        <View style={{ flexDirection: "row", justifyContent: "center" }}>
           <View>
-            <Text weight="italic" style={{ textAlign: "center" }}>
-              Viewing
-            </Text>
+            <View style = {{flexDirection: 'row', height: 30, justifyContent: 'center'}}>
+              <Text weight="italic" style={{ textAlign: "center" }}>
+                Viewing
+              </Text>
+
+              <IconButton
+                label="edit"
+                onPress={() => switchMode("edit")}
+                borderColor={colors.light}
+                style={{bottom: 30}}
+              />
+            </View>
             <Text
               weight="bold"
               style={{ textAlign: "center", fontSize: 28, marginBottom: 15 }}
             >
               {item["o:title"]}
             </Text>
-          </View>
-          <View>
-            <IconButton
-              label="edit"
-              onPress={() => switchMode("edit")}
-              borderColor={colors.light}
-              style={{ alignItems: "flex-end" }}
-            />
           </View>
         </View>
         <ScrollView style={{ height: "75%" }}>

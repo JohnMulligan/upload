@@ -29,11 +29,6 @@ function ItemView({ navigation, route }) {
   const [mode, setMode] = useState("view");
 
   const switchMode = (mode) => {
-    if (mode == "image")
-      navigation.navigate("Create Item", {
-        screen: "Choose Upload Type",
-        params: { item: route.params.item["o:id"] },
-      });
     setMode(mode);
   };
 
@@ -69,9 +64,9 @@ function ItemView({ navigation, route }) {
         <ImageMode navigation = {navigation} item={route.params.item} />
       ) : 
       mode == "edit" ? (
-        <EditMode item={route.params.item} />
+        <EditMode item={route.params.item} switchMode={(mode) => switchMode(mode)} />
       ) : (
-        <CopyMode item={route.params.item} />
+        <CopyMode item={route.params.item} switchMode={(mode) => switchMode(mode)} navigation = {navigation} />
       )}
       <View
         style={{
