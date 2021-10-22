@@ -43,7 +43,7 @@ function Home({ navigation }) {
         </Text>
       </View>
       <Card
-        style={{ maxHeight: 0.2 * height, overflow: "scroll" }}
+        style={{ maxHeight: 0.3 * height, overflow: "scroll" }}
         onPress={() =>
           navigation.navigate("Create Item", { screen: "Create New Item" })
         }

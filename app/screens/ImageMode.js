@@ -48,7 +48,6 @@ function ImageMode({ navigation, item, switchMode }) {
           setKeys(keys);
           getMedia(host, item["o:id"], keys)
             .then((res) => {
-              // console.log("s.kjfkladjfl", res);
               var med = [
                 "",
                 "",
@@ -69,7 +68,7 @@ function ImageMode({ navigation, item, switchMode }) {
               if (res.length < 13) setInterval(res);
               else setInterval(res.slice(0, 13));
               setMediaLength(res.length);
-
+              if (res.length == 0) setLoading(false)
               interval.map((id, idx) => {
                 getImage(host, id["o:id"], keys).then((img) => {
                   med[idx] = img;

@@ -54,7 +54,9 @@ function AllItemView({ navigation }) {
             key_identity: keys.split(",")[0],
             key_credential: keys.split(",")[1],
           }),
-          (start = 1)
+          (start = 1),
+          sortBy = "o:modified",
+          sortOrder = "desc"
         )
           .then((res) => {
             setTitles(res.map((item, idx) => item));
@@ -192,6 +194,7 @@ function AllItemView({ navigation }) {
           value={keyword}
           onChangeText={(newval) => setKeyWord(newval)}
           style={{ width: "87%" }}
+          onSubmitEditing={() => search()}
         />
         <TouchableOpacity onPress={() => reset()}>
           <Image

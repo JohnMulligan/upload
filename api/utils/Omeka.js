@@ -10,12 +10,12 @@ export const fetchItemsFilter = async (
   keyword,
   params,
   sortBy = "o:modified",
-  sortOrder = "asc"
+  sortOrder = "desc"
 ) => {
   const res = await axios.get(
     `http://${baseAddress}/api/${endpoint}?fulltext_search=${keyword}&key_identity=${
       keys.split(",")[0]
-    }&key_credential=${keys.split(",")[1]}&sort_by=o:modified`
+    }&key_credential=${keys.split(",")[1]}&sort_by=o:modified&sort_order=desc`
   );
   const data = res.data.map((each) => ({
     ...each,
@@ -31,11 +31,11 @@ export const fetch = async (
   itemSetId,
   params,
   start,
-  sortBy = "id",
-  sortOrder = "asc"
+  sortBy,
+  sortOrder
 ) => {
   // console.log(baseAddress, endpoint, loadpage, itemSetId, params, start);
-  const res = await axios.get(`http://${baseAddress}/api/${endpoint}`, {
+  const res = await axios.get(`http://${baseAddress}/api/${endpoint}?sort_by=o:modified&sort_order=desc`, {
     params: {
       ...params,
       item_set_id: itemSetId !== -1 ? itemSetId : null,

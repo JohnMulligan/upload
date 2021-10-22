@@ -50,7 +50,7 @@ function EditMode({ navigation, item, switchMode }) {
   const [templateSelected, setTemplateSelected] = useState("hi");
   const [resourceTemplates, setResourceTemplates] = useState([]);
   const [userDefinedFields, setUserDefinedFields] = useState({});
-
+  
   const [modal, setModal] = useState(false);
 
   const [warning, setWarning] = useState();
@@ -179,39 +179,49 @@ function EditMode({ navigation, item, switchMode }) {
           {item["o:title"]}
         </Text>
         {loading ? (
+          warning ? 
           <Text>
             Editing disabled...Please select a resource template for this class
             to continue.
-          </Text>
+          </Text> : <Text>Loading...</Text>
         ) : (
           <KeyboardAwareScrollView style={{ height: height - 130 }}>
             <View>
-              {Object.keys(properties).map(
-                (prop, idx) =>
-                  prop != "Title" &&
-                  prop != "id" && (
-                    <View key={idx}>
-                      <TextInput
-                        onChangeText={(value) =>
-                          handleChangeText(prop, idx, value)
-                        }
-                        multiline={true}
-                        name={prop}
-                        id={properties[prop][2]}
-                        key={idx}
-                        value={properties[prop][1]}
+              {Object.keys(properties).map((prop, idx) => (
+                <>
+                  {prop != "Title" &&
+                    prop != "id" && (
+                      <View key={idx}>
+                        <TextInput
+                          onChangeText={(value) =>
+                            handleChangeText(prop, idx, value)
+                          }
+                          multiline={true}
+                          name={prop}
+                          id={properties[prop][2]}
+                          key={idx + 1}
+                          value={properties[prop][1]}
+                        />
+                      </View>
+                    )
+                  }
+                  {idx == Object.keys(properties).length - 2 && (
+                    <View
+                      key = {idx + 2}
+                      style={{
+                        alignItems: "center",
+                        marginBottom: 50,
+                      }}
+                    >
+                      <Button
+                        key = {idx + 3}
+                        onPress={() => createItem()}
+                        title="SAVE CHANGES"
                       />
                     </View>
-                  )
-              )}
-              <View
-                style={{
-                  alignItems: "center",
-                  marginBottom: 50,
-                }}
-              >
-                <Button onPress={() => createItem()} title="SAVE CHANGES" />
-              </View>
+                  )}
+                </>
+              ))}
             </View>
           </KeyboardAwareScrollView>
         )}

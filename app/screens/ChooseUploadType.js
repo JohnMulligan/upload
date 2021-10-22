@@ -83,7 +83,7 @@ function ChooseUploadType({ navigation, route }) {
     } else navigation.navigate("Create New Item", { mode: "view" });
   };
   return (
-    <ItemScreen style={{ flex: 1 }} exit={() => navigation.goBack()}>
+    <ItemScreen style={{ flex: 1 }} exit={() => navigation.navigate("Home")}>
       <View
         style={{
           flexDirection: "row",
@@ -95,7 +95,7 @@ function ChooseUploadType({ navigation, route }) {
       </View>
       <View style={styles.body}>
         <KeyboardAwareScrollView style={{ flex: 1, marginBottom: 80 }}>
-          <Option
+          {/* <Option
             onPress={() => setSelected([true, false, false, false])}
             selected={selected[0]}
             text="I'm only uploading one image"
@@ -131,9 +131,9 @@ function ChooseUploadType({ navigation, route }) {
                 />
               </View>
             )}
-          </Option>
+          </Option> */}
 
-          <View style={styles.divider} />
+          {/* <View style={styles.divider} /> */}
           <Option
             onPress={() => setSelected([false, true, false, false])}
             selected={selected[1]}
@@ -146,7 +146,7 @@ function ChooseUploadType({ navigation, route }) {
             text="Manually assign page numbers"
             description="Give each image an assigned page number. Automatically starts at 1 and defaults to the next number"
           >
-            {selected[2] && (
+            {/* {selected[2] && (
               <View
                 style={{
                   flexDirection: "row",
@@ -182,15 +182,15 @@ function ChooseUploadType({ navigation, route }) {
                   }}
                 />
               </View>
-            )}
+            )} */}
           </Option>
-          <View style={styles.divider} />
+          {/* <View style={styles.divider} />
           <Option
             onPress={() => setSelected([false, false, false, true])}
             selected={selected[3]}
             text="I don't want to upload any media"
             description="Finish item now. You can go back and upload more media later."
-          />
+          /> */}
         </KeyboardAwareScrollView>
       </View>
       {warning && (
@@ -224,7 +224,8 @@ const styles = StyleSheet.create({
     height: "100%",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    padding: 20,
+    padding: 30,
+
   },
   children: {
     flexDirection: "row",

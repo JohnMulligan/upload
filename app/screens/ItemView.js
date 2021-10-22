@@ -64,7 +64,7 @@ function ItemView({ navigation, route }) {
         <ImageMode navigation = {navigation} item={route.params.item} />
       ) : 
       mode == "edit" ? (
-        <EditMode item={route.params.item} switchMode={(mode) => switchMode(mode)} />
+        <EditMode item={route.params.item} switchMode={(mode) => switchMode(mode)} navigation = {navigation} />
       ) : (
         <CopyMode item={route.params.item} switchMode={(mode) => switchMode(mode)} navigation = {navigation} />
       )}

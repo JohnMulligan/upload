@@ -52,6 +52,7 @@ function CopyMode({ navigation, item, switchMode }) {
   const [userDefinedFields, setUserDefinedFields] = useState({});
   const [modal, setModal] = useState(false);
   const [copyId, setCopyId] = useState();
+  const [invalidResourceTemplate, setInvalidResourceTemplate] = useState(false);
 
   /*navigation.navigate("Create Item", {
               screen: "Choose Upload Type",
@@ -63,9 +64,10 @@ function CopyMode({ navigation, item, switchMode }) {
     //if there is no assigned resource_template, the page should not load and
     //a warning should indicate that the user needs to go to Omeka and add a template
     //before being able to edit this item.
-    if (!item["o:resource_template"])
+    if (!item["o:resource_template"]) {
       console.log("Please select a resource template for this item to edit.");
-    else
+      setInvalidResourceTemplate(true);
+    } else
       SecureStore.getItemAsync("host").then((host) => {
         setHost(host);
         SecureStore.getItemAsync("keys").then((keys) => {
@@ -187,17 +189,21 @@ function CopyMode({ navigation, item, switchMode }) {
           {item["o:title"]}
         </Text>
         {loading ? (
-          <Text>
-            Copying from this item is disabled... Please select a resource
-            template for this item to continue.
-          </Text>
+          invalidResourceTemplate ? (
+            <Text>
+              Copying from this item is disabled... Please select a resource
+              template for this item to continue.
+            </Text>
+          ) : (
+            <Text>Loading...</Text>
+          )
         ) : (
           <KeyboardAwareScrollView style={{ height: height - 130 }}>
             <View>
-              {Object.keys(properties).map(
-                (prop, idx) =>
-                  prop != "Title" &&
-                  prop != "id" && (
+              {Object.keys(properties).map((prop, idx) => (
+                <>
+                  {/*TITLE AND ID REQUIRED FOR THIS TO WORK*/}
+                  {prop != "Title" && prop != "id" && (
                     <View key={idx}>
                       <TextInput
                         onChangeText={(value) =>
@@ -210,16 +216,22 @@ function CopyMode({ navigation, item, switchMode }) {
                         value={properties[prop][1]}
                       />
                     </View>
-                  )
-              )}
-              <View
-                style={{
-                  alignItems: "center",
-                  marginBottom: 50,
-                }}
-              >
-                <Button onPress={() => createItem()} title="COPY + CREATE" />
-              </View>
+                  )}
+                  {idx == Object.keys(properties).length - 2 && (
+                    <View
+                      style={{
+                        alignItems: "center",
+                        marginBottom: 50,
+                      }}
+                    >
+                      <Button
+                        onPress={() => createItem()}
+                        title="COPY + CREATE"
+                      />
+                    </View>
+                  )}
+                </>
+              ))}
             </View>
           </KeyboardAwareScrollView>
         )}

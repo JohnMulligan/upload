@@ -41,8 +41,8 @@ function Option({ text, description, onPress, selected, style, children }) {
 const styles = StyleSheet.create({
   box: {
     width: "100%",
-    padding: 10,
-    minHeight: 45,
+    padding: 20,
+    minHeight: 150,
     borderRadius: 10,
     shadowOffset: {
       width: 0,

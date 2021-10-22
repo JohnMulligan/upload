@@ -26,6 +26,9 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     width: 0.9 * width,
     marginBottom: 0.025*height,
+    minHeight: 1/8*height,
+    padding: 10,
+    justifyContent: 'center'
   },
   children: {
     alignItems: 'center',
