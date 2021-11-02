@@ -9,7 +9,11 @@ import {
 } from "react-native";
 import Text from "./Text";
 
-import { fetchItemData, getThumbnail } from "../../api/utils/Omeka";
+import {
+  fetchItemData,
+  getThumbnail,
+  getResourceTemplate,
+} from "../../api/utils/Omeka";
 import { useFocusEffect } from "@react-navigation/native";
 
 const { width, height } = Dimensions.get("window");
@@ -30,17 +34,24 @@ function Card({
   ...otherProps
 }) {
   const [properties, setProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [thumbnail, setThumbnail] = useState("");
+  const [resourceTemplate, setResourceTemplate] = useState("");
 
   useEffect(() => {
     SecureStore.getItemAsync("host").then((host) => {
       SecureStore.getItemAsync("keys").then((keys) => {
-        if (loading == true) {
-          getThumbnail(host, id, keys).then((res) => setThumbnail(res));
+        getThumbnail(host, id, keys).then((res) => {
+          setThumbnail(res);
+        });
+        if (data["o:resource_template"] != null) {
+          // console.log(data["o:resource_template"]["o:id"]);
+          getResourceTemplate(host, data["o:resource_template"]["o:id"]).then(
+            (res) => setResourceTemplate(res.data["o:label"])
+          );
         }
       });
     });
+    // console.log("data", data["o:resource_template"]);
   });
 
   return (
@@ -50,9 +61,16 @@ function Card({
       {...otherProps}
     >
       <View style={styles.header}>
-        <Text weight="bold" style={styles.text}>
-          {title}
-        </Text>
+        <View style={{ justifyContent: "space-between" }}>
+          <View style={{ maxHeight: "50%" }}>
+            <Text weight="bold" style={styles.text}>
+              {title}
+            </Text>
+          </View>
+          <Text style={{ color: colors.primary }} weight="medium">
+            {resourceTemplate}
+          </Text>
+        </View>
       </View>
       <View style={styles.thumbnail}>
         {thumbnail ? (
@@ -73,9 +91,11 @@ function Card({
 const styles = StyleSheet.create({
   button: {
     width: 0.9 * width,
+    flexWrap: "wrap",
     marginBottom: 0.025 * height,
     height: 0.165 * height - 7.5,
     flexDirection: "row",
+    paddingHorizontal: 3
   },
   children: {
     alignItems: "center",
@@ -105,7 +125,6 @@ const styles = StyleSheet.create({
   text: {
     color: colors.primary,
     fontSize: 22,
-    maxHeight: "60%",
   },
   prop: {
     flexDirection: "row",

@@ -93,7 +93,7 @@ function CopyMode({ navigation, item, switchMode }) {
                     // console.log('property', property)
                     itemValues[property["o:label"]] = [
                       property["o:label"],
-                      " ",
+                      "",
                       property["o:id"],
                       property["o:term"],
                     ];
@@ -147,6 +147,10 @@ function CopyMode({ navigation, item, switchMode }) {
         is_public: false,
       },
     ];
+    payload["o:resource_template"] = {
+      "@id": `http://${host}/api/resource_templates/${item["o:resource_template"]["o:id"]}`,
+      "o:id": item["o:resource_template"]["o:id"],
+    };
     SecureStore.getItemAsync("keys")
       .then((keys) => {
         axios

@@ -25,6 +25,8 @@ import ItemContext from "../../api/auth/itemContext";
 import * as SecureStore from "expo-secure-store";
 import RNFS from "react-native-fs";
 
+import {getMedia} from "../../api/utils/Omeka";
+
 const { width, height } = Dimensions.get("window");
 
 const CameraPreview = ({
@@ -100,6 +102,7 @@ const CameraPreview = ({
           begin: uploadBegin,
           progress: uploadProgress,
         }).promise.then((response) => {
+          console.log("response", response.body)
           if (response.statusCode == 200) {
             setUploadTracker(false);
             jsonresponse = JSON.parse(response.body);

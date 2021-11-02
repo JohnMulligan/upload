@@ -103,6 +103,7 @@ export const fetchItemData = async (
 export const fetchOne = async (baseAddress, endpoint, id, params = null) => {
   var address = `http://${baseAddress}/api/${endpoint}/${id}`;
   if (params) {
+    console.log('params', params)
     address += `?key_identity=${params.key_identity}&key_credential=${params.key_credential}`;
     console.log("address", address);
   }
@@ -192,6 +193,7 @@ export const getImage = async (baseAddress, id, keys) => {
 };
 
 export const getMedia = async (baseAddress, id, keys) => {
+  console.log("called");
   const res = await axios.get(
     `http://${baseAddress}/api/items/${id}?key_identity=${
       keys.split(",")[0]

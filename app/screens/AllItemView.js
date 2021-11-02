@@ -37,12 +37,8 @@ function AllItemView({ navigation }) {
   const [page, setPage] = useState(1);
   const [titles, setTitles] = useState([]);
 
-  const filterMatches = (item) => {
-    // console.log(item);
-  };
-
   useEffect(() => {
-    console.log("effect");
+    // console.log("effect");
     SecureStore.getItemAsync("host").then((host) => {
       SecureStore.getItemAsync("keys").then((keys) => {
         fetch(
@@ -141,14 +137,14 @@ function AllItemView({ navigation }) {
             keyword,
           )
             .then((res) => {
-              console.log("res", res);
               setFilteredSearches(
                 res.map((item, idx) => (
                   <ItemCard
                     key={idx}
                     title={item["o:title"]}
                     id={item["o:id"]}
-                    data={item}
+                    // data={item}
+                    data = {item}
                     onPress={() =>
                       navigation.navigate("Item View", {
                         item: item,
@@ -176,7 +172,7 @@ function AllItemView({ navigation }) {
         flex: 1,
         padding: 20,
         justifyContent: "center",
-        alignItems: "center",
+        alignItems: "center"
       }}
     >
       <View style={{ width: "100%" }}>
@@ -188,6 +184,7 @@ function AllItemView({ navigation }) {
           justifyContent: "center",
           alignItems: "center",
           marginBottom: 10,
+          
         }}
       >
         <TextInput
@@ -209,7 +206,7 @@ function AllItemView({ navigation }) {
           />
         </TouchableOpacity>
       </View>
-      <ScrollView style={{ flex: 1 }}>
+      <ScrollView>
         {loading ? (
           <Text>Loading...</Text>
         ) : filteredSearches ? (

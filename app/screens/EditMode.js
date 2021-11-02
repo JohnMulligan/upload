@@ -243,7 +243,6 @@ function EditMode({ navigation, item, switchMode }) {
               />
             </View>
           </Modal>
-          <View style={styles.shadow} />
         </>
       )}
     </View>

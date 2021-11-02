@@ -10,7 +10,7 @@ function Card({title, onPress, color = 'primary', style, children, ...otherProps
   return (
     <TouchableOpacity style={[styles.button, style]} onPress={onPress} {...otherProps}>
       <View style={styles.header}>
-        <Text weight="medium" style={styles.text}>
+        <Text weight="bold" style={styles.text}>
           {title}
         </Text>
       </View>
@@ -28,7 +28,8 @@ const styles = StyleSheet.create({
     marginBottom: 0.025*height,
     minHeight: 1/8*height,
     padding: 10,
-    justifyContent: 'center'
+    justifyContent: 'center',
+    backgroundColor: colors.light
   },
   children: {
     alignItems: 'center',

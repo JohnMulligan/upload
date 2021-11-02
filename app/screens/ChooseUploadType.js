@@ -27,6 +27,7 @@ import * as SecureStore from "expo-secure-store";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 import {
+  getMedia,
   fetchOne,
   fetchResourceTemplates,
   fetchProperties,
@@ -40,15 +41,15 @@ function ChooseUploadType({ navigation, route }) {
   const { user, setUser } = useContext(AuthContext);
   const { item, setItem } = useContext(ItemContext);
 
-  var boolArr = [false, true, false, false];
-  if (route.params && route.params.item) boolArr = [false, false, true, false];
+  var boolArr = [true, false];
+  if (route.params && route.params.item) boolArr = [true, false];
 
   const [selected, setSelected] = useState(boolArr);
   const [singlePage, onChangeSinglePage] = useState(1);
   const [assignPage, onChangeAssignPage] = useState(1);
   const [warning, setWarning] = useState(false);
 
-  const [id, setID] = useState(item);
+  const [id, setId] = useState(item);
 
   useEffect(() => {
     if (route.params && route.params.item) {
@@ -58,21 +59,44 @@ function ChooseUploadType({ navigation, route }) {
 
   const next = () => {
     if (selected[0]) {
-      navigation.navigate("Upload Media", {
-        editing: id,
-        type: 0,
-        page: singlePage,
+      SecureStore.getItemAsync("host").then((host) => {
+        SecureStore.getItemAsync("keys").then((keys) => {
+          getMedia(host, item, keys).then((res) => {
+            if (res.length > 0) {
+              fetchOne(host, "media", res[res.length - 1]["o:id"], {
+                key_identity: keys.split(",")[0],
+                key_credential: keys.split(",")[1],
+              }).then((last) => {
+                if (last["bibo:number"]) {
+                  navigation.navigate("Upload Media", {
+                    editing: id,
+                    type: 1,
+                    page: last["bibo:number"][0]["@value"],
+                  });
+                } else {
+                  navigation.navigate("Upload Media", {
+                    editing: id,
+                    type: 1,
+                    page: 1,
+                  });
+                }
+              });
+            } else {
+              navigation.navigate("Upload Media", {
+                editing: id,
+                type: 1,
+                page: 1,
+              });
+            }
+          });
+        });
       });
     } else if (selected[1]) {
-      navigation.navigate("Upload Media", { editing: id, type: 1, page: 1 });
-    } else if (selected[2]) {
       navigation.navigate("Upload Media", {
         editing: id,
         type: 2,
         page: assignPage,
       });
-    } else {
-      navigation.navigate("Confirm");
     }
     setWarning(false);
   };
@@ -135,16 +159,16 @@ function ChooseUploadType({ navigation, route }) {
 
           {/* <View style={styles.divider} /> */}
           <Option
-            onPress={() => setSelected([false, true, false, false])}
-            selected={selected[1]}
+            onPress={() => setSelected([true, false])}
+            selected={selected[0]}
             text="Auto-increment page uploads"
-            description="Counts the number of pages for you, starting at no. 1. Can’t edit page number while uploading."
+            description="Counts the number of pages for you, starting at the last page number. Can’t edit page number while uploading."
           />
           <Option
-            onPress={() => setSelected([false, false, true, false])}
-            selected={selected[2]}
+            onPress={() => setSelected([false, true])}
+            selected={selected[1]}
             text="Manually assign page numbers"
-            description="Give each image an assigned page number. Automatically starts at 1 and defaults to the next number"
+            description="Give each image an assigned page number."
           >
             {/* {selected[2] && (
               <View
@@ -184,13 +208,6 @@ function ChooseUploadType({ navigation, route }) {
               </View>
             )} */}
           </Option>
-          {/* <View style={styles.divider} />
-          <Option
-            onPress={() => setSelected([false, false, false, true])}
-            selected={selected[3]}
-            text="I don't want to upload any media"
-            description="Finish item now. You can go back and upload more media later."
-          /> */}
         </KeyboardAwareScrollView>
       </View>
       {warning && (
@@ -225,7 +242,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     padding: 30,
-
   },
   children: {
     flexDirection: "row",

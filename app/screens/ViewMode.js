@@ -105,6 +105,7 @@ function ViewMode({ navigation, item, switchMode }) {
                   idx > 1 &&
                   prop[0] != "Title" && (
                     <View
+                      key = {idx + 2}
                       style={{
                         flexDirection: "row",
                         justifyContent: "space-between",
