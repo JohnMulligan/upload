@@ -15,9 +15,6 @@ import Text from "../components/Text";
 import Logo from "../config/Icons/SClogo.svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { KeyboardAccessoryView } from "react-native-keyboard-accessory";
-import { KeyboardAccessoryNavigation } from "react-native-keyboard-accessory";
-
 //authorization
 import AuthContext from "../../api/auth/context";
 import * as SecureStore from "expo-secure-store";

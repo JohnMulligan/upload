@@ -3,7 +3,6 @@ import { createStackNavigator } from "@react-navigation/stack";
 import AllItemView from "../screens/AllItemView";
 import Home from "../screens/Home";
 import NewItem from "../screens/NewItem";
-import FindAndEdit from "../screens/FindAndEdit";
 
 import ItemView from "../screens/ItemView";
 import ViewMode from "../screens/ViewMode";
@@ -21,7 +20,6 @@ function AppNavigator() {
     <Stack.Navigator headerMode="none" mode="modal">
       <Stack.Screen name="Home" component={Home} />
       <Stack.Screen name="Create Item" component={CreateItemNavigator} />
-      <Stack.Screen name="Edit Item" component={FindAndEdit} />
       <Stack.Screen name="View All Items" component={AllItemView} />
       <Stack.Screen name="Item View" component={ItemView} />
       <Stack.Screen name="View Mode" component={ViewMode} />

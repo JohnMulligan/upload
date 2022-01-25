@@ -15,7 +15,6 @@ import IconButton from "../components/IconButton";
 import Text from "../components/Text";
 import TextInput from "../components/TextInput";
 import { fetchItemData, getThumbnail } from "../../api/utils/Omeka";
-import RNPickerSelect from "react-native-picker-select";
 import Modal from "../components/Modal";
 import ModalButton from "../components/ModalButton";
 
