@@ -9,18 +9,14 @@
   "dependencies": {
     "@expo-google-fonts/barlow": "^0.1.0",
     "@expo/vector-icons": "^12.0.0",
-    "@react-native-community/picker": "^1.8.1",
     "@react-navigation/native": "^5.9.4",
     "@react-navigation/stack": "^5.14.5",
     "axios": "^0.21.1",
     "expo": "~41.0.1",
     "expo-app-loading": "^1.0.3",
-    "expo-crypto": "~9.1.0",
     "expo-secure-store": "~10.1.0",
     "expo-splash-screen": "~0.10.2",
-    "expo-status-bar": "~1.0.4",
     "expo-updates": "~0.5.4",
-    "form-data": "^4.0.0",
     "formik": "^2.2.9",
     "react": "16.13.1",
     "react-dom": "16.13.1",
@@ -29,15 +25,13 @@
     "react-native-crypto": "^2.2.0",
     "react-native-fs": "^2.18.0",
     "react-native-gesture-handler": "~1.10.2",
-    "react-native-keyboard-accessory": "^0.1.15",
     "react-native-keyboard-aware-scroll-view": "^0.9.4",
     "react-native-picker-select": "^8.0.4",
     "react-native-reanimated": "^2.1.0",
     "react-native-safe-area-context": "^3.2.0",
     "react-native-screens": "~3.0.0",
     "react-native-unimodules": "~0.13.3",
-    "react-native-web": "~0.13.12",
-    "yup": "^0.32.9"
+    "react-native-web": "~0.13.12"
   },
   "devDependencies": {
     "@babel/core": "~7.9.0"

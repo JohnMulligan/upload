@@ -6,8 +6,6 @@ PODS:
   - EXConstants (10.1.3):
     - UMConstantsInterface
     - UMCore
-  - EXCrypto (9.1.0):
-    - UMCore
   - EXErrorRecovery (2.1.0):
     - UMCore
   - EXFileSystem (11.0.2):
@@ -290,8 +288,6 @@ PODS:
     - React-Core (= 0.63.4)
     - React-cxxreact (= 0.63.4)
     - React-jsi (= 0.63.4)
-  - RNCPicker (1.8.1):
-    - React-Core
   - RNFS (2.18.0):
     - React
   - RNGestureHandler (1.10.3):
@@ -355,7 +351,6 @@ DEPENDENCIES:
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - EXApplication (from `../node_modules/expo-application/ios`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
-  - EXCrypto (from `../node_modules/expo-crypto/ios`)
   - EXErrorRecovery (from `../node_modules/expo-error-recovery/ios`)
   - EXFileSystem (from `../node_modules/expo-file-system/ios`)
   - EXFont (from `../node_modules/expo-font/ios`)
@@ -394,7 +389,6 @@ DEPENDENCIES:
   - React-RCTText (from `../node_modules/react-native/Libraries/Text`)
   - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
-  - "RNCPicker (from `../node_modules/@react-native-community/picker`)"
   - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
@@ -425,8 +419,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-application/ios"
   EXConstants:
     :path: "../node_modules/expo-constants/ios"
-  EXCrypto:
-    :path: "../node_modules/expo-crypto/ios"
   EXErrorRecovery:
     :path: "../node_modules/expo-error-recovery/ios"
   EXFileSystem:
@@ -499,8 +491,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/Libraries/Vibration"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
-  RNCPicker:
-    :path: "../node_modules/@react-native-community/picker"
   RNFS:
     :path: "../node_modules/react-native-fs"
   RNGestureHandler:
@@ -543,7 +533,6 @@ SPEC CHECKSUMS:
   DoubleConversion: cde416483dac037923206447da6e1454df403714
   EXApplication: 4797b8b37f0b0470f587fdccf6407f44b50d18b5
   EXConstants: c4dd28acc12039c999612507a5f935556f2c86ce
-  EXCrypto: 9cbeb90f6c60a8ae9f26242fd2db916b21c55700
   EXErrorRecovery: 720641265b8cf95e6cdeb1884ac38e794a352488
   EXFileSystem: dcf2273f49431e5037347c733a2dc5d08e0d0a9e
   EXFont: d6fb79f9863120f0d0b26b0c2d1453bc9511e9df
@@ -580,7 +569,6 @@ SPEC CHECKSUMS:
   React-RCTText: 5c51df3f08cb9dedc6e790161195d12bac06101c
   React-RCTVibration: ae4f914cfe8de7d4de95ae1ea6cc8f6315d73d9d
   ReactCommon: 73d79c7039f473b76db6ff7c6b159c478acbbb3b
-  RNCPicker: 914b557e20b3b8317b084aca9ff4b4edb95f61e4
   RNFS: 3ab21fa6c56d65566d1fb26c2228e2b6132e5e32
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
   RNReanimated: 70f662b5232dd5d19ccff581e919a54ea73df51c
