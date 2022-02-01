@@ -14,7 +14,7 @@ import Header from "../components/Header";
 import IconButton from "../components/IconButton";
 import Text from "../components/Text";
 import TextInput from "../components/TextInput";
-import { fetchItemData, getThumbnail } from "../../api/utils/Omeka";
+import { fetchItemData } from "../../api/utils/Omeka";
 import Modal from "../components/Modal";
 import ModalButton from "../components/ModalButton";
 
@@ -27,7 +27,6 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import colors from "../config/colors";
 
 import {
-  fetchOne,
   fetchResourceTemplates,
   fetchProperties,
   getPropertiesInResourceTemplate,

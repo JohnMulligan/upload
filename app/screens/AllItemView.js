@@ -1,24 +1,16 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Image,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
+import { View, Image, Text, ScrollView, TouchableOpacity } from "react-native";
 import NavigationButton from "../components/NavigationButton";
 
 import ItemCard from "../components/ItemCard";
 import ItemScreen from "../components/ItemScreen";
 import Header from "../components/Header";
 import TextInput from "../components/TextInput";
-
-import { fetchItemData, getThumbnail } from "../../api/utils/Omeka";
 import { useFocusEffect } from "@react-navigation/native";
 
 import {
-  fetch,
   getPropertiesInResourceTemplate,
+  fetch,
   fetchItemsFilter,
 } from "../../api/utils/Omeka";
 import * as SecureStore from "expo-secure-store";
@@ -46,8 +38,8 @@ function AllItemView({ navigation }) {
             key_credential: keys.split(",")[1],
           }),
           (start = 1),
-          sortBy = "o:modified",
-          sortOrder = "desc"
+          (sortBy = "o:modified"),
+          (sortOrder = "desc")
         )
           .then((res) => {
             setItems(
@@ -73,7 +65,7 @@ function AllItemView({ navigation }) {
   }, [page]);
 
   const loadPage = (inc) => {
-    if(page+inc != 0) setPage(page + inc);
+    if (page + inc != 0) setPage(page + inc);
   };
 
   useFocusEffect(() => {
@@ -123,12 +115,7 @@ function AllItemView({ navigation }) {
     if (keyword != "") {
       SecureStore.getItemAsync("host").then((host) => {
         SecureStore.getItemAsync("keys").then((keys) => {
-          fetchItemsFilter(
-            host,
-            "items",
-            keys,
-            keyword,
-          )
+          fetchItemsFilter(host, "items", keys, keyword)
             .then((res) => {
               setFilteredSearches(
                 res.map((item, idx) => (
@@ -137,7 +124,7 @@ function AllItemView({ navigation }) {
                     title={item["o:title"]}
                     id={item["o:id"]}
                     // data={item}
-                    data = {item}
+                    data={item}
                     onPress={() =>
                       navigation.navigate("Item View", {
                         item: item,
@@ -165,7 +152,7 @@ function AllItemView({ navigation }) {
         flex: 1,
         padding: 20,
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
       }}
     >
       <View style={{ width: "100%" }}>
@@ -177,7 +164,6 @@ function AllItemView({ navigation }) {
           justifyContent: "center",
           alignItems: "center",
           marginBottom: 10,
-          
         }}
       >
         <TextInput

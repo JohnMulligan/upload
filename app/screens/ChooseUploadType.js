@@ -61,7 +61,10 @@ function ChooseUploadType({ navigation, route }) {
     if (selected[0]) {
       SecureStore.getItemAsync("host").then((host) => {
         SecureStore.getItemAsync("keys").then((keys) => {
-          getMedia(host, item, keys).then((res) => {
+          getMedia(host, item, {
+            key_identity: keys.split(",")[0],
+            key_credential: keys.split(",")[1],
+          }).then((res) => {
             if (res.length > 0) {
               fetchOne(host, "media", res[res.length - 1]["o:id"], {
                 key_identity: keys.split(",")[0],

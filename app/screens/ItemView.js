@@ -15,7 +15,6 @@ import CopyMode from "./CopyMode";
 import ImageMode from "./ImageMode";
 
 import {
-  fetchOne,
   fetchResourceTemplates,
   fetchProperties,
   getPropertiesInResourceTemplate,

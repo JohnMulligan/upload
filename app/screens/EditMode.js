@@ -14,7 +14,7 @@ import Header from "../components/Header";
 import IconButton from "../components/IconButton";
 import Text from "../components/Text";
 import TextInput from "../components/TextInput";
-import { fetchItemData, getThumbnail } from "../../api/utils/Omeka";
+import { fetchItemData} from "../../api/utils/Omeka";
 import Modal from "../components/Modal";
 import ModalButton from "../components/ModalButton";
 

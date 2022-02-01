@@ -9,11 +9,7 @@ import {
 } from "react-native";
 import Text from "./Text";
 
-import {
-  fetchItemData,
-  getThumbnail,
-  getResourceTemplate,
-} from "../../api/utils/Omeka";
+import { getThumbnail, getResourceTemplate } from "../../api/utils/Omeka";
 import { useFocusEffect } from "@react-navigation/native";
 
 const { width, height } = Dimensions.get("window");
@@ -40,7 +36,10 @@ function Card({
   useEffect(() => {
     SecureStore.getItemAsync("host").then((host) => {
       SecureStore.getItemAsync("keys").then((keys) => {
-        getThumbnail(host, id, keys).then((res) => {
+        getThumbnail(host, id, {
+          key_identity: keys.split(",")[0],
+          key_credential: keys.split(",")[1],
+        }).then((res) => {
           setThumbnail(res);
         });
         if (data["o:resource_template"] != null) {
@@ -95,7 +94,7 @@ const styles = StyleSheet.create({
     marginBottom: 0.025 * height,
     height: 0.165 * height - 7.5,
     flexDirection: "row",
-    paddingHorizontal: 3
+    paddingHorizontal: 3,
   },
   children: {
     alignItems: "center",

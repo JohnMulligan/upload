@@ -13,12 +13,7 @@ import ItemScreen from "../components/ItemScreen";
 import Header from "../components/Header";
 import IconButton from "../components/IconButton";
 import Text from "../components/Text";
-import {
-  fetchItemData,
-  getThumbnail,
-  getMedia,
-  getImage,
-} from "../../api/utils/Omeka";
+import { getMedia, getImage } from "../../api/utils/Omeka";
 
 const { width, height } = Dimensions.get("window");
 
@@ -45,8 +40,12 @@ function ImageMode({ navigation, item, switchMode }) {
       SecureStore.getItemAsync("host").then((host) => {
         setHost(host);
         SecureStore.getItemAsync("keys").then((keys) => {
+          params = {
+            key_identity: keys.split(",")[0],
+            key_credential: keys.split(",")[1],
+          };
           setKeys(keys);
-          getMedia(host, item["o:id"], keys)
+          getMedia(host, item["o:id"], params)
             .then((res) => {
               var med = [
                 "",
@@ -68,13 +67,11 @@ function ImageMode({ navigation, item, switchMode }) {
               if (res.length < 13) setInterval(res);
               else setInterval(res.slice(0, 13));
               setMediaLength(res.length);
-              if (res.length == 0) setLoading(false)
+              if (res.length == 0) setLoading(false);
               interval.map((id, idx) => {
-                getImage(host, id["o:id"], keys).then((img) => {
+                getImage(host, id["o:id"], params).then((img) => {
                   med[idx] = img;
-                  // console.log("med", med);
                   completedGettingImages++;
-                  // console.log(idx, "complete", completedGettingImages);
                   if (completedGettingImages == interval.length) {
                     setLoading(false);
                     setMedia(med);

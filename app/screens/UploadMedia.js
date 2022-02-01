@@ -39,10 +39,6 @@ function UploadMedia({ navigation, route }) {
     setNextModal(true);
   };
 
-  const confirm = () => {
-    navigation.navigate("Confirm");
-  };
-
   return (
     <>
       <View style={styles.header}>
