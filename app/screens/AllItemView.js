@@ -3,18 +3,14 @@ import {
   View,
   Image,
   Text,
-  Platform,
   ScrollView,
   TouchableOpacity,
 } from "react-native";
-import Button from "../components/Button";
 import NavigationButton from "../components/NavigationButton";
 
 import ItemCard from "../components/ItemCard";
 import ItemScreen from "../components/ItemScreen";
 import Header from "../components/Header";
-import IconButton from "../components/IconButton";
-
 import TextInput from "../components/TextInput";
 
 import { fetchItemData, getThumbnail } from "../../api/utils/Omeka";
@@ -35,7 +31,6 @@ function AllItemView({ navigation }) {
   const [keyword, setKeyWord] = useState("");
   const [filteredSearches, setFilteredSearches] = useState(null);
   const [page, setPage] = useState(1);
-  const [titles, setTitles] = useState([]);
 
   useEffect(() => {
     // console.log("effect");
@@ -55,7 +50,6 @@ function AllItemView({ navigation }) {
           sortOrder = "desc"
         )
           .then((res) => {
-            setTitles(res.map((item, idx) => item));
             setItems(
               res.map((item, idx) => (
                 <ItemCard
@@ -103,7 +97,6 @@ function AllItemView({ navigation }) {
             .then((res) => {
               // console.log(res);
               setLoading(false);
-              setTitles(res.map((item, idx) => item));
               setItems(
                 res.map((item, idx) => (
                   <ItemCard

@@ -27,7 +27,6 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import colors from "../config/colors";
 
 import {
-  fetchResourceTemplates,
   getPropertiesInResourceTemplate
 } from "../../api/utils/Omeka";
 

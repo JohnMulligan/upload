@@ -1,20 +1,11 @@
-import React, { useState, useEffect, useContext } from "react";
-import {
-  View,
-  Image,
-  Platform,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Dimensions,
-} from "react-native";
+import React, { useState, useContext } from "react";
+import { View, StyleSheet, ScrollView, Dimensions } from "react-native";
 import RNPickerSelect from "react-native-picker-select";
 import * as axios from "axios";
 import { Formik, useFormikContext } from "formik";
 import { useFocusEffect } from "@react-navigation/native";
 
 import Button from "../components/Button";
-import Card from "../components/Card";
 import Header from "../components/Header";
 import ItemScreen from "../components/ItemScreen";
 import TextInput from "../components/TextInput";
@@ -22,7 +13,6 @@ import Text from "../components/Text";
 import Icon from "../components/Icon";
 import Modal from "../components/Modal";
 import ModalButton from "../components/ModalButton";
-import NavigationButton from "../components/NavigationButton";
 import ErrorMessage from "../components/ErrorMessage";
 
 import colors from "../config/colors";
@@ -64,11 +54,6 @@ function NewItem({ navigation, route }) {
   //make authentication pathway here for keys
   useFocusEffect(() => {
     if (loading) {
-      // console.log(".");
-      if (route.params && route.params.item) {
-        setItem(route.params.item["o:id"]);
-      }
-
       SecureStore.getItemAsync("host").then((host) => {
         setHost(host);
         fetchResourceTemplates(host)
@@ -144,7 +129,7 @@ function NewItem({ navigation, route }) {
       "o:id": templates.class,
     };
     payload["o:is_public"] = false;
-    console.log('payload', payload);
+    console.log("payload", payload);
     if (!title) {
       setError(true);
     } else {
@@ -152,31 +137,21 @@ function NewItem({ navigation, route }) {
       SecureStore.getItemAsync("keys")
         .then((keys) => {
           {
-            route.params && route.params.mode && route.params.mode == "edit"
-              ? axios
-                  .patch(
-                    `http://${host}/api/items/${item[0]}?key_identity=${
-                      keys.split(",")[0]
-                    }&key_credential=${keys.split(",")[1]}`,
-                    payload
-                  )
-                  .then((res) => navigation.navigate("Confirm"))
-                  .catch((error) => console.log(error))
-              : axios
-                  .post(`http://${host}/api/items`, payload, {
-                    params: {
-                      key_identity: keys.split(",")[0],
-                      key_credential: keys.split(",")[1],
-                    },
-                  })
-                  .then((response) => {
-                    console.log(response.data);
-                    setItem([response.data["o:id"], user]);
-                    setModal(true);
-                  })
-                  .catch((error) => {
-                    console.log("error");
-                  });
+            axios
+              .post(`http://${host}/api/items`, payload, {
+                params: {
+                  key_identity: keys.split(",")[0],
+                  key_credential: keys.split(",")[1],
+                },
+              })
+              .then((response) => {
+                console.log(response.data);
+                setItem([response.data["o:id"], user]);
+                setModal(true);
+              })
+              .catch((error) => {
+                console.log("error");
+              });
           }
         })
         .catch((error) => console.log("credentials failed", error));
@@ -191,13 +166,7 @@ function NewItem({ navigation, route }) {
 
   return (
     <ItemScreen style={{ flex: 1 }} exit={() => navigation.goBack()}>
-      <Header
-        title={
-          route.params && route.params.mode && route.params.mode == "edit"
-            ? "Edit Item"
-            : "Create New Item"
-        }
-      />
+      <Header title={"Create New Item"} />
       <View style={styles.body}>
         <Formik
           initialValues={types}
@@ -227,7 +196,11 @@ function NewItem({ navigation, route }) {
                       {Object.keys(types).map((data, idx) => (
                         <TextInput
                           onChangeText={(value) =>
-                            handleChangeText(types[data]["o:label"], value, IDs[idx])
+                            handleChangeText(
+                              types[data]["o:label"],
+                              value,
+                              IDs[idx]
+                            )
                           }
                           multiline={false}
                           name={types[data]["o:label"]}
@@ -244,16 +217,7 @@ function NewItem({ navigation, route }) {
                           marginBottom: 50,
                         }}
                       >
-                        <Button
-                          onPress={handleSubmit}
-                          title={
-                            route.params &&
-                            route.params.mode &&
-                            route.params.mode == "edit"
-                              ? "EDIT"
-                              : "CREATE"
-                          }
-                        />
+                        <Button onPress={handleSubmit} title={"CREATE"} />
                       </View>
                     </>
                   ) : (
@@ -289,28 +253,6 @@ function NewItem({ navigation, route }) {
           <View style={styles.shadow} />
         </>
       )}
-      {route.params && route.params.mode && route.params.mode == "view" && (
-        <>
-          <NavigationButton
-            style={[
-              styles.next,
-              {
-                position: "absolute",
-                bottom: insets.bottom,
-                right: 30,
-                zIndex: 10,
-              },
-            ]}
-            onPress={() => next()}
-            direction="right"
-          />
-          <View style={styles.shadow}>
-            <Text style={{ color: colors.light, textAlign: "center" }}>
-              Editing is disabled as this item has already been created
-            </Text>
-          </View>
-        </>
-      )}
     </ItemScreen>
   );
 }
@@ -322,10 +264,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 30,
     padding: 25,
     flex: 1,
-  },
-  icon: {
-    position: "absolute",
-    zIndex: 5,
   },
   picker: {
     borderRadius: 10,
@@ -354,9 +292,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: "15%",
-  },
-  next: {
-    position: "absolute",
   },
 });
 export default NewItem;
