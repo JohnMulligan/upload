@@ -27,28 +27,17 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import colors from "../config/colors";
 
 import {
-  fetchOne,
   fetchResourceTemplates,
-  fetchProperties,
-  getPropertiesInResourceTemplate,
-  getPropertyIds,
-  getProperties,
-  patchItem,
+  getPropertiesInResourceTemplate
 } from "../../api/utils/Omeka";
 
 const { width, height } = Dimensions.get("window");
 
 function EditMode({ navigation, item, switchMode }) {
   const [properties, setProperties] = useState([]);
-  const [propertyTerms, setPropertyTerms] = useState([]);
   const [host, setHost] = useState(null);
-  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  const [fields, setFields] = useState([]);
   const [error, setError] = useState(false);
-  const [templateSelected, setTemplateSelected] = useState("hi");
-  const [resourceTemplates, setResourceTemplates] = useState([]);
-  const [userDefinedFields, setUserDefinedFields] = useState({});
   
   const [modal, setModal] = useState(false);
 
@@ -105,13 +94,11 @@ function EditMode({ navigation, item, switchMode }) {
   });
 
   const handleChangeText = (prop, idx, value) => {
-    properties[prop][1] = value; // replace e.target.value with whatever you want to change it to
-    setProperties({ ...properties }); // ??
-    // console.log(idx, value, properties);
+    properties[prop][1] = value; 
+    setProperties({ ...properties });
   };
 
   const createItem = () => {
-    console.log("hi");
     let payload = {};
     let title = properties["Title"][1];
     let v = Object.values(properties).map(

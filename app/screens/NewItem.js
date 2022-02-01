@@ -50,15 +50,10 @@ function NewItem({ navigation, route }) {
   const { item, setItem } = useContext(ItemContext);
   const [host, setHost] = useState("");
 
-  const [screenHeight, setScreenHeight] = useState(height);
-  const [length, setLength] = useState(2);
   const [resourceTemplates, setResourceTemplates] = useState([]);
   const [templateId, setTemplateId] = useState(0);
-  const [options, setOptions] = useState([]);
-  const [templateSelected, setTemplateSelected] = useState("");
+  const [templateSelected, setTemplateSelected] = useState(""); //
   const [modal, setModal] = useState(false);
-  const [data, setData] = useState([]);
-  const [titles, setTitles] = useState([]);
   const [IDs, setIDs] = useState([]);
   const [types, setTypes] = useState({});
   const [values, setValues] = useState({});
@@ -94,11 +89,6 @@ function NewItem({ navigation, route }) {
     if (itemSelected.length > 0) setTemplateId(itemSelected[0].id);
     //voids "Select an item"
     if (idx != 0) {
-      setTitles(
-        await getPropertiesInResourceTemplate(host, itemSelected[0].id).then(
-          (res) => res.map((prop) => prop.data["o:label"])
-        )
-      );
       setTypes(
         await getPropertiesInResourceTemplate(host, itemSelected[0].id).then(
           (res) => res.map((prop) => prop.data)
@@ -132,14 +122,14 @@ function NewItem({ navigation, route }) {
 
   const createItem = () => {
     let payload = {};
-    let title = values[titles[0]];
+    let title = values[types[0]["o:label"]];
 
     let v = IDs.map((id, idx) => [
       {
         type: "literal",
         property_id: id,
-        property_label: titles[idx],
-        "@value": values[titles[idx]],
+        property_label: types[idx]["o:label"],
+        "@value": values[types[idx]["o:label"]],
         is_public: false,
       },
     ]);
@@ -234,16 +224,16 @@ function NewItem({ navigation, route }) {
                   </View>
                   {templateSelected ? (
                     <>
-                      {titles.map((title, idx) => (
+                      {Object.keys(types).map((data, idx) => (
                         <TextInput
                           onChangeText={(value) =>
-                            handleChangeText(title, value, IDs[idx])
+                            handleChangeText(types[data]["o:label"], value, IDs[idx])
                           }
                           multiline={false}
-                          name={title}
+                          name={types[data]["o:label"]}
                           id={IDs[idx]}
                           key={idx}
-                          value={values[title + ""]}
+                          value={values[types[data]["o:label"] + ""]}
                         />
                       ))}
                       <ErrorMessage error="Title required" visible={error} />
