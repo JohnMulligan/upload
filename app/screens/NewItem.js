@@ -51,6 +51,11 @@ function NewItem({ navigation, route }) {
   //make authentication pathway here for keys
   useFocusEffect(() => {
     if (loading) {
+      // console.log(".");
+      if (route.params && route.params.item) {
+        setItem(route.params.item["o:id"]);
+      }
+
       SecureStore.getItemAsync("host").then((host) => {
         setHost(host);
         fetchResourceTemplates(host)
@@ -131,24 +136,35 @@ function NewItem({ navigation, route }) {
       setError(true);
     } else {
       setError(false);
+
       SecureStore.getItemAsync("keys")
         .then((keys) => {
           {
-            axios
-              .post(`http://${host}/api/items`, payload, {
-                params: {
-                  key_identity: keys.split(",")[0],
-                  key_credential: keys.split(",")[1],
-                },
-              })
-              .then((response) => {
-                console.log(response.data);
-                setItem([response.data["o:id"], user]);
-                setModal(true);
-              })
-              .catch((error) => {
-                console.log("error");
-              });
+            route.params && route.params.mode && route.params.mode == "edit"
+              ? axios
+                  .patch(
+                    `http://${host}/api/items/${item[0]}?key_identity=${
+                      keys.split(",")[0]
+                    }&key_credential=${keys.split(",")[1]}`,
+                    payload
+                  )
+                  .then((res) => navigation.navigate("Confirm"))
+                  .catch((error) => console.log(error))
+              : axios
+                  .post(`http://${host}/api/items`, payload, {
+                    params: {
+                      key_identity: keys.split(",")[0],
+                      key_credential: keys.split(",")[1],
+                    },
+                  })
+                  .then((response) => {
+                    console.log(response.data);
+                    setItem([response.data["o:id"], user]);
+                    setModal(true);
+                  })
+                  .catch((error) => {
+                    console.log("error");
+                  });
           }
         })
         .catch((error) => console.log("credentials failed", error));
@@ -163,7 +179,13 @@ function NewItem({ navigation, route }) {
 
   return (
     <ItemScreen style={{ flex: 1 }} exit={() => navigation.goBack()}>
-      <Header title={"Create New Item"} />
+      <Header
+        title={
+          route.params && route.params.mode && route.params.mode == "edit"
+            ? "Edit Item"
+            : "Create New Item"
+        }
+      />
       <View style={styles.body}>
         <Formik
           initialValues={types}
@@ -214,7 +236,16 @@ function NewItem({ navigation, route }) {
                           marginBottom: 50,
                         }}
                       >
-                        <Button onPress={handleSubmit} title={"CREATE"} />
+                        <Button
+                          onPress={handleSubmit}
+                          title={
+                            route.params &&
+                            route.params.mode &&
+                            route.params.mode == "edit"
+                              ? "EDIT"
+                              : "CREATE"
+                          }
+                        />
                       </View>
                     </>
                   ) : (

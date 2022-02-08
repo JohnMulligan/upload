@@ -152,7 +152,6 @@ export const getImage = async (baseAddress, id, params = null) => {
 };
 
 export const getMedia = async (baseAddress, id, params = null) => {
-  console.log("called ", params);
   params.page = 1;
   params.per_page = 10;
   const res = await axios.get(`http://${baseAddress}/api/items/${id}`, {
