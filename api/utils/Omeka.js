@@ -3,6 +3,7 @@ import * as SecureStore from "expo-secure-store";
 
 const PER_PAGE = 4;
 
+// General fetch
 export const fetch = async (
   baseAddress,
   endpoint,
@@ -26,7 +27,6 @@ export const fetch = async (
       },
     }
   );
-
   const data = res.data.map((each) => ({
     ...each,
     key: each["o:id"],
@@ -34,6 +34,8 @@ export const fetch = async (
   return data;
 };
 
+
+// General fetch but the order of display is most recent - oldest
 export const fetchItemsFilter = async (
   baseAddress,
   endpoint,
@@ -55,6 +57,7 @@ export const fetchItemsFilter = async (
   return data;
 };
 
+// Gets the object data for each resource template currently available
 export const fetchResourceTemplates = async (baseAddress) => {
   const res = await axios.get(
     `http://${baseAddress}/api/resource_templates?per_page=${PER_PAGE}`
@@ -62,6 +65,7 @@ export const fetchResourceTemplates = async (baseAddress) => {
   return res.data;
 };
 
+// Returns item data in object form with: title, id, property_label, @value, and property_id
 export const fetchItemData = async (
   baseAddress,
   endpoint,
@@ -81,7 +85,6 @@ export const fetchItemData = async (
       res.data[keys[i]][0] &&
       res.data[keys[i]][0]["property_id"]
     ) {
-      // console.log('test', keys[i]);
       data.push([
         res.data[keys[i]][0]["property_label"],
         res.data[keys[i]][0]["@value"],
@@ -95,12 +98,16 @@ export const fetchItemData = async (
   return data;
 };
 
+// Get one item by ID
+// only retrieves PUBLIC items
 export const fetchOne = async (baseAddress, endpoint, id, params = null) => {
   var address = `http://${baseAddress}/api/${endpoint}/${id}`;
   const res = await axios.get(address, { params });
   return res.data;
 };
 
+// Get one resource template by ID
+// Assumes all resource templates are public
 export const getResourceTemplate = async (baseAddress, templateId) => {
   const res = await axios.get(
     "http://" + baseAddress + "/api/resource_templates/" + templateId
@@ -108,8 +115,8 @@ export const getResourceTemplate = async (baseAddress, templateId) => {
   return res;
 };
 
+// Retrieve all property IDs in a given resource template
 export const getPropertiesInResourceTemplate = (baseAddress, templateId) => {
-  // console.log(baseAddress, templateId)
   return getResourceTemplate(baseAddress, templateId).then((response) => {
     let requests = response.data["o:resource_template_property"].map(
       (property) => axios.get(property["o:property"]["@id"])
@@ -118,15 +125,7 @@ export const getPropertiesInResourceTemplate = (baseAddress, templateId) => {
   });
 };
 
-export const getProperties = (baseAddress, templateId) => {
-  return getResourceTemplate(baseAddress, templateId).then((res) => {
-    let requests = res.data["o:resource_template_property"].map(
-      (prop) => prop["o:property"]
-    );
-    return requests;
-  });
-};
-
+// Returns a list of all the properties by their IDs
 export const getPropertyIds = (baseAddress, templateId) => {
   return getResourceTemplate(baseAddress, templateId).then((res) => {
     let requests = res.data["o:resource_template_property"].map(
@@ -136,6 +135,7 @@ export const getPropertyIds = (baseAddress, templateId) => {
   });
 };
 
+// Get the thumbnail image attached to each item
 export const getThumbnail = async (baseAddress, id, params) => {
   const res = await axios.get(`http://${baseAddress}/api/items/${id}`, {
     params,
@@ -143,6 +143,7 @@ export const getThumbnail = async (baseAddress, id, params) => {
   return res.data["thumbnail_display_urls"]["square"];
 };
 
+// Get the full sized (square) image attached to each item
 export const getImage = async (baseAddress, id, params = null) => {
   console.log("id", id);
   const res = await axios.get(`http://${baseAddress}/api/media/${id}`, {
@@ -151,6 +152,7 @@ export const getImage = async (baseAddress, id, params = null) => {
   return res.data["o:thumbnail_urls"]["square"];
 };
 
+// Get all media uploaded to each item
 export const getMedia = async (baseAddress, id, params = null) => {
   params.page = 1;
   params.per_page = 10;

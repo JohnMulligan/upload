@@ -29,6 +29,14 @@ import {getMedia} from "../../api/utils/Omeka";
 
 const { width, height } = Dimensions.get("window");
 
+/**
+ * CameraPreview
+ * 
+ * is the screen that shows after the user has taken a picture.
+ * They then have the option to RETAKE, KEEP (which tries to
+ * upload the image to the Omeka S database), and change the 
+ * page number of this photo.
+ */
 const CameraPreview = ({
   fileUri,
   item,
@@ -47,7 +55,11 @@ const CameraPreview = ({
   const [pageNumberModal, setPageNumberModal] = useState(false);
   const [failureModal, setFailureModal] = useState(false);
 
-  next = function () {
+  /** Handles two options:
+   * 1. Auto upload
+   * 2. Pick correct page number before uploading next picture
+   */
+  const next = function () {
     const type = params.type;
     if (type == 1) {
       uploadNextPageMedia();
@@ -59,7 +71,6 @@ const CameraPreview = ({
   };
 
   const uploadImage = (item, fileUri, files) => {
-    console.log("upload", item, fileUri, files);
     const uploadBegin = (response) => {
       var jobId = response.jobId;
       console.log("UPLOAD HAS BEGUN! JobId: " + jobId);
@@ -74,6 +85,7 @@ const CameraPreview = ({
       console.log("UPLOAD IS " + percentage + "% DONE!");
     };
 
+    //post request using RNFS
     SecureStore.getItemAsync("host").then((host) => {
       SecureStore.getItemAsync("keys").then((keys) => {
         RNFS.uploadFiles({
@@ -102,14 +114,13 @@ const CameraPreview = ({
           begin: uploadBegin,
           progress: uploadProgress,
         }).promise.then((response) => {
-          console.log("response", response.body)
           if (response.statusCode == 200) {
             setUploadTracker(false);
             jsonresponse = JSON.parse(response.body);
+            // check that the photo uploaded is the same one the user took
             RNFS.hash(fileUri, "sha256")
               .then((rnhash) => {
                 if (jsonresponse["o:sha256"] == rnhash) {
-                  console.log("same!!");
                   next();
                 }
               })
@@ -124,7 +135,8 @@ const CameraPreview = ({
     });
   };
 
-  keepPicture = async function (item, fileUri) {
+  // Prepare image payload for sending to the server
+  const keepPicture = async function (item, fileUri) {
     setFailureModal(false);
     setUploadTracker(true);
     if (!item) item = params.testItem;
@@ -252,11 +264,9 @@ const CameraPreview = ({
               textStyle={{ color: colors.light }}
               title="retake"
             />
-            {/* <Text style={{ color: "white" }}>Uploaded {uploadProgress}%</Text> */}
             <View style={{ flexDirection: "row" }}>
               <SmallButton
                 activeOpacity={params.type == 2 ? 0 : 1}
-                // onPress={params.type == 2 ? () => setPageNumberModal(true) : null}
                 onPress={() => setPageNumberModal(true)}
                 title={"PAGE " + page}
                 style={{
@@ -342,21 +352,27 @@ const CameraPreview = ({
   );
 };
 
+/** CameraScreen
+ * is the actual interface for a camera. 
+ * 
+ * I apologize for making this a class and the other a function :))
+ * Most of this was pulled from the internet.
+ */
 export default class CameraScreen extends React.Component {
   static contextType = ItemContext;
 
   componentDidMount() {
     const item = this.context;
     if (item && item["item"]) {
-      console.log("item1", item["item"]);
       if (item["item"][0]) this.setState({ item: item["item"][0] });
       else this.setState({ item: item["item"], editing: "true" });
     }
 
-    //item[1] holds other options (like user, booleans, etc.)
     this.setState({ page: this.props.page });
   }
 
+  /* Most variables have not been implemented... the camera is the most
+  basic it can possiblyl be */
   state = {
     flash: "off",
     zoom: 0,
@@ -380,13 +396,6 @@ export default class CameraScreen extends React.Component {
     editing: false,
   };
 
-  touchToFocus(event) {
-    const { pageX, pageY } = event.nativeEvent;
-    const screenWidth = Dimensions.get("window").width;
-    const screenHeight = Dimensions.get("window").height;
-    const isPortrait = screenHeight > screenWidth;
-  }
-
   takePicture = async function () {
     if (this.camera) {
       const file = await this.camera.takePictureAsync();
@@ -401,11 +410,6 @@ export default class CameraScreen extends React.Component {
   };
 
   renderCamera(item) {
-    const drawFocusRingPosition = {
-      top: this.state.autoFocusPoint.drawRectPosition.y - 32,
-      left: this.state.autoFocusPoint.drawRectPosition.x - 32,
-    };
-
     return (
       <RNCamera
         ref={(ref) => {

@@ -11,6 +11,7 @@ import {
 import colors from "../config/colors";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+// Wrapper for most of the pages in this app
 const ItemScreen = ({ children, exit, style }) => {
   const insets = useSafeAreaInsets();
 

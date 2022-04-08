@@ -4,6 +4,7 @@ import Text from "./Text";
 
 import colors from "../config/colors";
 
+// Specifically tailored for choosing options for page type before uploading a photo. Like a card
 function Option({ text, description, onPress, selected, style, children }) {
   return (
     <TouchableOpacity

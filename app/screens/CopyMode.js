@@ -31,7 +31,6 @@ import {
   fetchProperties,
   getPropertiesInResourceTemplate,
   getPropertyIds,
-  getProperties,
   patchItem,
 } from "../../api/utils/Omeka";
 
